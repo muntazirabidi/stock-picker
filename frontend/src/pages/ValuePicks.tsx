@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useUniverseTickers, useScoreUniverseWithValuation } from '@/hooks/useUniverse'
+import { useUniverseTickers, useScoreUniverseWithValuation, useValueScores } from '@/hooks/useUniverse'
 import { cn, getStageColor, getScoreColor } from '@/lib/utils'
 import type { UniverseType, CompanyScoreWithValuation } from '@/types'
 import { RefreshCw, Search, TrendingUp, Target, DollarSign, Gem, Info } from 'lucide-react'
@@ -73,7 +73,9 @@ export default function ValuePicks() {
   const [sortBy, setSortBy] = useState('value_score')
   const [scoreCount, setScoreCount] = useState(50)
   const [searchTerm, setSearchTerm] = useState('')
-  const [scores, setScores] = useState<CompanyScoreWithValuation[]>([])
+
+  // Use global cache for scores (persists across navigation)
+  const { data: scores, setData: setScores } = useValueScores()
 
   // Valuation filters
   const [maxPE, setMaxPE] = useState<number | ''>('')

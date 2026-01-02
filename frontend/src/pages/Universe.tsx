@@ -15,9 +15,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useUniverseTickers, useScoreUniverse } from '@/hooks/useUniverse'
+import { useUniverseTickers, useScoreUniverse, useUniverseScores } from '@/hooks/useUniverse'
 import { cn, getStageColor, getScoreColor } from '@/lib/utils'
-import type { UniverseType, CompanyScore } from '@/types'
+import type { UniverseType } from '@/types'
 import { Download, RefreshCw, Search, Info, Zap, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const universeOptions = [
@@ -57,7 +57,9 @@ export default function Universe() {
   const [scoreCount, setScoreCount] = useState(20) // Default to 20 stocks
   const [minScore, setMinScore] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
-  const [scores, setScores] = useState<CompanyScore[]>([])
+
+  // Use global cache for scores (persists across navigation)
+  const { data: scores, setData: setScores } = useUniverseScores()
 
   const handleSort = (key: SortKey) => {
     if (sortBy === key) {

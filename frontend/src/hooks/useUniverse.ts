@@ -33,8 +33,17 @@ export function useScoreUniverseWithValuation() {
 }
 
 export function useUniverseScores() {
-  return useQuery<CompanyScore[]>({
-    queryKey: ['universe', 'scores'],
-    enabled: false, // Only populated by mutation
-  })
+  const queryClient = useQueryClient()
+  return {
+    data: queryClient.getQueryData<CompanyScore[]>(['universe', 'scores']) || [],
+    setData: (data: CompanyScore[]) => queryClient.setQueryData(['universe', 'scores'], data),
+  }
+}
+
+export function useValueScores() {
+  const queryClient = useQueryClient()
+  return {
+    data: queryClient.getQueryData<CompanyScoreWithValuation[]>(['universe', 'value-scores']) || [],
+    setData: (data: CompanyScoreWithValuation[]) => queryClient.setQueryData(['universe', 'value-scores'], data),
+  }
 }
