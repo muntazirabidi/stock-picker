@@ -46,8 +46,9 @@ st.markdown("""
     .metric-formula {
         font-family: monospace;
         font-size: 0.85rem;
-        background: #f0f0f0;
-        padding: 0.25rem 0.5rem;
+        background: #1565c0;
+        color: #ffffff;
+        padding: 0.35rem 0.75rem;
         border-radius: 4px;
         display: inline-block;
         margin-bottom: 0.5rem;
@@ -55,7 +56,7 @@ st.markdown("""
 
     .metric-desc {
         font-size: 0.9rem;
-        color: #444;
+        color: #333333;
         line-height: 1.6;
     }
 
@@ -74,6 +75,15 @@ st.markdown("""
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1rem;
+    }
+
+    .stage-card p {
+        color: #333333;
+        margin-bottom: 0.5rem;
+    }
+
+    .stage-card strong {
+        color: #1a1a1a;
     }
 
     .block-container {
