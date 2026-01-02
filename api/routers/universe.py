@@ -1,11 +1,52 @@
 """Universe API router."""
 
+import hashlib
+import json
+import time
+from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from typing import Literal
 
 from api.schemas import CompanyScore, CompanyScoreWithValuation, ScoreRequest
 
 router = APIRouter()
+
+# Score cache configuration
+SCORE_CACHE_DIR = Path("data/score_cache")
+SCORE_CACHE_TTL_HOURS = 24
+SCORE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def get_score_cache_key(tickers: list[str]) -> str:
+    """Generate cache key from sorted ticker list."""
+    sorted_tickers = sorted(tickers)
+    ticker_hash = hashlib.md5(",".join(sorted_tickers).encode()).hexdigest()
+    return f"scores_{len(tickers)}_{ticker_hash}"
+
+
+def get_cached_scores(cache_key: str) -> list[dict] | None:
+    """Get cached scores if valid."""
+    cache_path = SCORE_CACHE_DIR / f"{cache_key}.json"
+    if not cache_path.exists():
+        return None
+    try:
+        with open(cache_path) as f:
+            cached = json.load(f)
+        # Check TTL
+        if time.time() - cached["timestamp"] > SCORE_CACHE_TTL_HOURS * 3600:
+            cache_path.unlink()
+            return None
+        return cached["scores"]
+    except (json.JSONDecodeError, KeyError):
+        cache_path.unlink(missing_ok=True)
+        return None
+
+
+def save_scores_to_cache(cache_key: str, scores: list[dict]) -> None:
+    """Save scores to cache."""
+    cache_path = SCORE_CACHE_DIR / f"{cache_key}.json"
+    with open(cache_path, "w") as f:
+        json.dump({"timestamp": time.time(), "scores": scores}, f)
 
 
 @router.get("/tickers")
@@ -40,9 +81,16 @@ async def get_universe_tickers(
 
 @router.post("/score")
 async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
-    """Score a list of tickers."""
+    """Score a list of tickers with caching."""
     import logging
     logger = logging.getLogger(__name__)
+
+    # Check score cache first
+    cache_key = get_score_cache_key(request.tickers)
+    cached_scores = get_cached_scores(cache_key)
+    if cached_scores:
+        logger.info(f"Returning {len(cached_scores)} cached scores")
+        return [CompanyScore(**s) for s in cached_scores]
 
     try:
         from src.data.yahoo_client import YahooClient
@@ -93,6 +141,12 @@ async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
                 strength_score=s.strength_score,
                 valuation_score=s.valuation_score,
             ))
+
+        # Cache the scores
+        if result:
+            save_scores_to_cache(cache_key, [s.model_dump() for s in result])
+            logger.info(f"Cached {len(result)} scores")
+
         return result
     except Exception as e:
         logger.error(f"Score universe error: {e}", exc_info=True)
@@ -150,7 +204,7 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
 
             # Get raw metrics for this ticker
             raw = metrics_map.get(s.ticker)
-            valuation = raw.valuation if raw else None
+            valuation = raw.traditional.valuation if raw and raw.traditional else None
 
             # Calculate value score: 50% quality + 50% valuation
             value_score = (s.quality_score + s.valuation_score) / 2 if s.quality_score and s.valuation_score else None
@@ -158,7 +212,7 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
             result.append(CompanyScoreWithValuation(
                 ticker=s.ticker,
                 name=s.name,
-                sector=raw.sector if raw else None,
+                sector=None,  # Not available in current data model
                 stage=s.stage,
                 composite_score=s.composite_score,
                 quality_score=s.quality_score,
