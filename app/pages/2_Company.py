@@ -67,10 +67,12 @@ if st.sidebar.button("🔍 Analyze", type="primary") or ticker:
             col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
 
             with col1:
-                name = financials.profile.name if financials.profile else ticker
+                name = financials.profile.company_name if financials.profile else ticker
                 st.markdown(f"## {name}")
                 if financials.profile:
-                    st.caption(f"{financials.profile.sector} | {financials.profile.industry}")
+                    sector = financials.profile.sector or "N/A"
+                    industry = financials.profile.industry or "N/A"
+                    st.caption(f"{sector} | {industry}")
 
             with col2:
                 if financials.quote:
@@ -115,20 +117,31 @@ if st.sidebar.button("🔍 Analyze", type="primary") or ticker:
             st.markdown("---")
 
             # Score breakdown
-            if score and score.category_scores:
+            if score:
                 st.markdown("### Score Breakdown")
 
                 score_cols = st.columns(4)
-                categories = ["quality", "growth", "strength", "valuation"]
-                icons = ["⭐", "📈", "💪", "💰"]
 
-                for i, (cat, icon) in enumerate(zip(categories, icons)):
-                    val = score.category_scores.get(cat)
-                    with score_cols[i]:
-                        st.metric(
-                            f"{icon} {cat.title()}",
-                            f"{val:.1f}" if val else "N/A",
-                        )
+                with score_cols[0]:
+                    st.metric(
+                        "⭐ Quality",
+                        f"{score.quality_score:.1f}" if score.quality_score else "N/A",
+                    )
+                with score_cols[1]:
+                    st.metric(
+                        "📈 Growth",
+                        f"{score.growth_score:.1f}" if score.growth_score else "N/A",
+                    )
+                with score_cols[2]:
+                    st.metric(
+                        "💪 Strength",
+                        f"{score.strength_score:.1f}" if score.strength_score else "N/A",
+                    )
+                with score_cols[3]:
+                    st.metric(
+                        "💰 Valuation",
+                        f"{score.valuation_score:.1f}" if score.valuation_score else "N/A",
+                    )
 
             st.markdown("---")
 
@@ -164,11 +177,11 @@ if st.sidebar.button("🔍 Analyze", type="primary") or ticker:
                     g = metrics.traditional.growth
                     cols = st.columns(3)
                     with cols[0]:
-                        st.metric("Revenue CAGR (3Y)", f"{g.revenue_cagr_3y:.1%}" if g.revenue_cagr_3y else "N/A")
+                        st.metric("Revenue CAGR (3Y)", f"{g.revenue_growth_3y_cagr:.1%}" if g.revenue_growth_3y_cagr else "N/A")
                     with cols[1]:
-                        st.metric("EPS CAGR (3Y)", f"{g.eps_cagr_3y:.1%}" if g.eps_cagr_3y else "N/A")
+                        st.metric("Earnings CAGR (3Y)", f"{g.earnings_growth_3y_cagr:.1%}" if g.earnings_growth_3y_cagr else "N/A")
                     with cols[2]:
-                        st.metric("FCF CAGR (3Y)", f"{g.fcf_cagr_3y:.1%}" if g.fcf_cagr_3y else "N/A")
+                        st.metric("FCF CAGR (3Y)", f"{g.fcf_growth_3y_cagr:.1%}" if g.fcf_growth_3y_cagr else "N/A")
 
                     if metrics.growth_stage:
                         st.markdown("**Growth Stage Metrics:**")
@@ -198,7 +211,7 @@ if st.sidebar.button("🔍 Analyze", type="primary") or ticker:
                     with cols[0]:
                         st.metric("P/E", f"{v.pe_ratio:.1f}" if v.pe_ratio else "N/A")
                     with cols[1]:
-                        st.metric("P/FCF", f"{v.price_to_fcf:.1f}" if v.price_to_fcf else "N/A")
+                        st.metric("P/S", f"{v.ps_ratio:.1f}" if v.ps_ratio else "N/A")
                     with cols[2]:
                         st.metric("EV/EBITDA", f"{v.ev_to_ebitda:.1f}" if v.ev_to_ebitda else "N/A")
 
@@ -220,9 +233,9 @@ if st.sidebar.button("🔍 Analyze", type="primary") or ticker:
                 revenues = []
                 net_incomes = []
 
-                for stmt in sorted(financials.income_statements, key=lambda x: x.fiscal_year):
-                    years.append(stmt.fiscal_year)
-                    revenues.append(stmt.total_revenue / 1e9 if stmt.total_revenue else 0)
+                for stmt in sorted(financials.income_statements, key=lambda x: x.date):
+                    years.append(stmt.date.year)
+                    revenues.append(stmt.revenue / 1e9 if stmt.revenue else 0)
                     net_incomes.append(stmt.net_income / 1e9 if stmt.net_income else 0)
 
                 fig = make_subplots(specs=[[{"secondary_y": True}]])

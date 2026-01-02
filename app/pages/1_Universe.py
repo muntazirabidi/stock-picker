@@ -76,10 +76,10 @@ def score_tickers(tickers: tuple) -> pd.DataFrame:
             "Name": score.name or "",
             "Stage": score.stage.value,
             "Score": score.composite_score,
-            "Quality": score.category_scores.get("quality"),
-            "Growth": score.category_scores.get("growth"),
-            "Strength": score.category_scores.get("strength"),
-            "Valuation": score.category_scores.get("valuation"),
+            "Quality": score.quality_score,
+            "Growth": score.growth_score,
+            "Strength": score.strength_score,
+            "Valuation": score.valuation_score,
         })
 
     df = pd.DataFrame(data)
