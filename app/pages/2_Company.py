@@ -134,6 +134,21 @@ def get_price_data(ticker: str, days: int = 365):
         return []
 
 
+def get_period_days(period: str) -> int:
+    """Convert period string to days."""
+    periods = {
+        "1W": 7,
+        "1M": 30,
+        "3M": 90,
+        "6M": 180,
+        "YTD": (date.today() - date(date.today().year, 1, 1)).days,
+        "1Y": 365,
+        "2Y": 730,
+        "5Y": 1825,
+    }
+    return periods.get(period, 365)
+
+
 @st.cache_data(ttl=300, show_spinner=False)
 def get_technical_indicators(ticker: str):
     """Fetch technical indicators from Polygon."""
@@ -369,120 +384,191 @@ if ticker and analyze_btn:
 
         # Price Chart Tab
         with tab_chart:
+            # Time period selector - Google Finance style
+            period_cols = st.columns(8)
+            periods = ["1W", "1M", "3M", "6M", "YTD", "1Y", "2Y", "5Y"]
+
+            # Initialize period in session state
+            if "chart_period" not in st.session_state:
+                st.session_state.chart_period = "1Y"
+
+            for i, period in enumerate(periods):
+                with period_cols[i]:
+                    if st.button(
+                        period,
+                        key=f"period_{period}",
+                        use_container_width=True,
+                        type="primary" if st.session_state.chart_period == period else "secondary"
+                    ):
+                        st.session_state.chart_period = period
+                        st.rerun()
+
+            selected_period = st.session_state.chart_period
+            days = get_period_days(selected_period)
+
             with st.spinner("Loading price data..."):
-                bars = get_price_data(ticker, days=365)
-                sma_50, sma_200, rsi = get_technical_indicators(ticker)
+                bars = get_price_data(ticker, days=days)
 
             if bars:
-                # Create subplot with price and RSI
-                fig = make_subplots(
-                    rows=2, cols=1,
-                    shared_xaxes=True,
-                    vertical_spacing=0.05,
-                    row_heights=[0.7, 0.3],
-                    subplot_titles=(f"{ticker} Price", "RSI (14)")
-                )
-
-                # Price line
                 dates = [b.date for b in bars]
                 closes = [b.close for b in bars]
+                opens = [b.open for b in bars]
+                highs = [b.high for b in bars]
+                lows = [b.low for b in bars]
+                volumes = [b.volume for b in bars]
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=dates,
-                        y=closes,
-                        name="Price",
-                        line=dict(color="#1565c0", width=2),
-                    ),
-                    row=1, col=1
-                )
+                # Calculate change
+                start_price = closes[0]
+                end_price = closes[-1]
+                price_change = end_price - start_price
+                pct_change = (price_change / start_price) * 100
+                is_positive = price_change >= 0
 
-                # SMA 50
-                if sma_50:
-                    sma_dates = [s.date for s in sma_50]
-                    sma_vals = [s.value for s in sma_50]
-                    fig.add_trace(
-                        go.Scatter(
-                            x=sma_dates,
-                            y=sma_vals,
-                            name="SMA 50",
-                            line=dict(color="#ef6c00", width=1, dash="dot"),
-                        ),
-                        row=1, col=1
-                    )
+                # Display current price with change
+                st.markdown(f"""
+                <div style="margin: 1rem 0;">
+                    <span style="font-size: 2.5rem; font-weight: 600; color: #ffffff;">${end_price:.2f}</span>
+                    <span style="font-size: 1.2rem; color: {'#2e7d32' if is_positive else '#c62828'}; margin-left: 1rem;">
+                        {'+' if is_positive else ''}{price_change:.2f} ({'+' if is_positive else ''}{pct_change:.2f}%)
+                    </span>
+                    <span style="font-size: 0.9rem; color: #888; margin-left: 0.5rem;">past {selected_period}</span>
+                </div>
+                """, unsafe_allow_html=True)
 
-                # SMA 200
-                if sma_200:
-                    sma_dates = [s.date for s in sma_200]
-                    sma_vals = [s.value for s in sma_200]
-                    fig.add_trace(
-                        go.Scatter(
-                            x=sma_dates,
-                            y=sma_vals,
-                            name="SMA 200",
-                            line=dict(color="#2e7d32", width=1, dash="dot"),
-                        ),
-                        row=1, col=1
-                    )
+                # Google Finance style area chart
+                line_color = "#2e7d32" if is_positive else "#c62828"
+                fill_color = "rgba(46, 125, 50, 0.1)" if is_positive else "rgba(198, 40, 40, 0.1)"
 
-                # RSI
-                if rsi:
-                    rsi_dates = [r.date for r in rsi]
-                    rsi_vals = [r.value for r in rsi]
-                    fig.add_trace(
-                        go.Scatter(
-                            x=rsi_dates,
-                            y=rsi_vals,
-                            name="RSI",
-                            line=dict(color="#9c27b0", width=2),
-                        ),
-                        row=2, col=1
-                    )
+                fig = go.Figure()
 
-                    # RSI overbought/oversold lines
-                    fig.add_hline(y=70, line_dash="dash", line_color="#c62828", opacity=0.5, row=2, col=1)
-                    fig.add_hline(y=30, line_dash="dash", line_color="#2e7d32", opacity=0.5, row=2, col=1)
+                # Area fill
+                fig.add_trace(go.Scatter(
+                    x=dates,
+                    y=closes,
+                    fill='tozeroy',
+                    fillcolor=fill_color,
+                    line=dict(color=line_color, width=2),
+                    name="Price",
+                    hovertemplate="$%{y:.2f}<extra></extra>"
+                ))
 
                 fig.update_layout(
-                    height=500,
-                    margin=dict(l=0, r=0, t=40, b=0),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                    plot_bgcolor="white",
-                    paper_bgcolor="white",
+                    height=350,
+                    margin=dict(l=0, r=0, t=10, b=0),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
                     hovermode="x unified",
+                    showlegend=False,
+                    xaxis=dict(
+                        showgrid=False,
+                        showline=False,
+                        color="#888",
+                    ),
+                    yaxis=dict(
+                        showgrid=True,
+                        gridcolor="rgba(255,255,255,0.1)",
+                        showline=False,
+                        color="#888",
+                        tickprefix="$",
+                    ),
                 )
-
-                fig.update_xaxes(showgrid=False)
-                fig.update_yaxes(showgrid=True, gridcolor="#f0f0f0")
 
                 st.plotly_chart(fig, use_container_width=True)
 
-                # Price stats
-                if len(closes) > 1:
-                    col1, col2, col3, col4 = st.columns(4)
-                    current = closes[-1]
-                    high_52w = max(closes)
-                    low_52w = min(closes)
-                    change_ytd = ((current - closes[0]) / closes[0]) * 100
+                # Key stats grid - Google Finance style
+                st.markdown("---")
+
+                col1, col2, col3, col4, col5, col6 = st.columns(6)
+
+                # Get latest bar data
+                latest = bars[-1] if bars else None
+                high_period = max(closes)
+                low_period = min(closes)
+
+                with col1:
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 0.75rem;">Open</div>
+                        <div style="color: #fff; font-size: 1rem;">${latest.open:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col2:
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 0.75rem;">High</div>
+                        <div style="color: #fff; font-size: 1rem;">${latest.high:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col3:
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 0.75rem;">Low</div>
+                        <div style="color: #fff; font-size: 1rem;">${latest.low:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col4:
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 0.75rem;">{selected_period} High</div>
+                        <div style="color: #fff; font-size: 1rem;">${high_period:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col5:
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 0.75rem;">{selected_period} Low</div>
+                        <div style="color: #fff; font-size: 1rem;">${low_period:.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col6:
+                    avg_vol = sum(volumes) / len(volumes) if volumes else 0
+                    vol_str = f"{avg_vol/1e6:.1f}M" if avg_vol >= 1e6 else f"{avg_vol/1e3:.0f}K"
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 0.75rem;">Avg Volume</div>
+                        <div style="color: #fff; font-size: 1rem;">{vol_str}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # Technical indicators expander
+                with st.expander("Technical Indicators"):
+                    sma_50, sma_200, rsi = get_technical_indicators(ticker)
+
+                    col1, col2, col3 = st.columns(3)
 
                     with col1:
-                        st.metric("Current", f"${current:.2f}")
-                    with col2:
-                        st.metric("52W High", f"${high_52w:.2f}", f"{((current/high_52w)-1)*100:.1f}%")
-                    with col3:
-                        st.metric("52W Low", f"${low_52w:.2f}", f"{((current/low_52w)-1)*100:+.1f}%")
-                    with col4:
-                        st.metric("YTD Change", f"{change_ytd:+.1f}%")
+                        if sma_50:
+                            sma50_val = sma_50[-1].value
+                            above_sma50 = end_price > sma50_val
+                            st.metric(
+                                "SMA 50",
+                                f"${sma50_val:.2f}",
+                                f"{'Above' if above_sma50 else 'Below'}",
+                                delta_color="normal" if above_sma50 else "inverse"
+                            )
 
-                # RSI interpretation
-                if rsi:
-                    latest_rsi = rsi[-1].value
-                    if latest_rsi >= 70:
-                        st.warning(f"RSI at {latest_rsi:.0f} - Overbought territory (>70)")
-                    elif latest_rsi <= 30:
-                        st.success(f"RSI at {latest_rsi:.0f} - Oversold territory (<30)")
-                    else:
-                        st.info(f"RSI at {latest_rsi:.0f} - Neutral range (30-70)")
+                    with col2:
+                        if sma_200:
+                            sma200_val = sma_200[-1].value
+                            above_sma200 = end_price > sma200_val
+                            st.metric(
+                                "SMA 200",
+                                f"${sma200_val:.2f}",
+                                f"{'Above' if above_sma200 else 'Below'}",
+                                delta_color="normal" if above_sma200 else "inverse"
+                            )
+
+                    with col3:
+                        if rsi:
+                            rsi_val = rsi[-1].value
+                            rsi_status = "Overbought" if rsi_val > 70 else "Oversold" if rsi_val < 30 else "Neutral"
+                            st.metric("RSI (14)", f"{rsi_val:.0f}", rsi_status)
+
             else:
                 st.info("Price data not available. Check if Polygon API key is configured.")
 
