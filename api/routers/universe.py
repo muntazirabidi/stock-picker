@@ -41,6 +41,9 @@ async def get_universe_tickers(
 @router.post("/score")
 async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
     """Score a list of tickers."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
         from src.data.yahoo_client import YahooClient
         from src.metrics.calculator import MetricsCalculator
@@ -54,19 +57,23 @@ async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
         all_metrics = []
         for ticker in request.tickers:
             try:
+                logger.info(f"Fetching financials for {ticker}")
                 financials = client.get_company_financials(ticker)
                 if financials:
                     metrics = calculator.calculate(financials)
                     if metrics:
                         all_metrics.append(metrics)
-            except Exception:
-                # Skip tickers that fail
+                        logger.info(f"Successfully processed {ticker}")
+            except Exception as e:
+                logger.warning(f"Failed to process {ticker}: {e}")
                 continue
 
         if not all_metrics:
+            logger.warning("No metrics calculated for any ticker")
             return []
 
         # Score the universe
+        logger.info(f"Scoring {len(all_metrics)} companies")
         scores = scorer.score_universe(all_metrics)
 
         # Convert to response format
@@ -84,4 +91,5 @@ async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
             for s in scores
         ]
     except Exception as e:
+        logger.error(f"Score universe error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
