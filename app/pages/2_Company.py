@@ -214,6 +214,8 @@ if "selected_ticker" not in st.session_state:
     st.session_state.selected_ticker = None
 if "auto_analyze" not in st.session_state:
     st.session_state.auto_analyze = False
+if "analyzed_ticker" not in st.session_state:
+    st.session_state.analyzed_ticker = None
 
 # Sidebar
 with st.sidebar:
@@ -265,7 +267,17 @@ with st.sidebar:
         analyze_btn = False
 
 # Main content
+# Trigger analysis on button click or if we have an analyzed ticker
+should_show_analysis = False
+
 if ticker and analyze_btn:
+    st.session_state.analyzed_ticker = ticker
+    should_show_analysis = True
+elif st.session_state.analyzed_ticker:
+    ticker = st.session_state.analyzed_ticker
+    should_show_analysis = True
+
+if should_show_analysis:
     with st.spinner(f"Analyzing {ticker}..."):
         financials, metrics, score = analyze_company(ticker)
 
