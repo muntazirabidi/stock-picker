@@ -21,24 +21,24 @@ st.markdown("""
     .page-title {
         font-size: 1.75rem;
         font-weight: 400;
-        color: #1a1a1a;
+        color: #e0e0e0;
         margin-bottom: 0.25rem;
     }
 
     .company-header {
         font-size: 2rem;
         font-weight: 600;
-        color: #1a1a1a;
+        color: #ffffff;
         margin-bottom: 0.25rem;
     }
 
     .company-meta {
         font-size: 0.9rem;
-        color: #888;
+        color: #b0b0b0;
     }
 
     .metric-card {
-        background: #fafafa;
+        background: #2a2a2a;
         border-radius: 8px;
         padding: 1rem;
         text-align: center;
@@ -47,12 +47,12 @@ st.markdown("""
     .metric-value {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #1a1a1a;
+        color: #ffffff;
     }
 
     .metric-label {
         font-size: 0.75rem;
-        color: #888;
+        color: #a0a0a0;
         text-transform: uppercase;
         letter-spacing: 0.03em;
     }
@@ -79,7 +79,7 @@ st.markdown("""
     }
 
     .news-card {
-        background: #fafafa;
+        background: #2a2a2a;
         border-radius: 8px;
         padding: 1rem;
         margin-bottom: 0.75rem;
@@ -88,13 +88,13 @@ st.markdown("""
 
     .news-title {
         font-weight: 600;
-        color: #1a1a1a;
+        color: #ffffff;
         margin-bottom: 0.25rem;
     }
 
     .news-meta {
         font-size: 0.75rem;
-        color: #888;
+        color: #a0a0a0;
     }
 </style>
 """, unsafe_allow_html=True)
