@@ -1,0 +1,5 @@
+ticker,tier,notes,added_date
+# Add stocks manually to include in the universe
+# Example:
+# MELI,3,Latin America e-commerce leader,2024-01-15
+# SE,3,Southeast Asia tech,2024-01-15
