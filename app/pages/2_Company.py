@@ -291,72 +291,140 @@ if ticker and analyze_btn:
         with tab1:
             if metrics and metrics.traditional and metrics.traditional.quality:
                 q = metrics.traditional.quality
-                cols = st.columns(4)
 
-                metrics_data = [
-                    ("ROIC", q.roic, True),
-                    ("ROE", q.roe, True),
-                    ("Gross Margin", q.gross_margin, True),
-                    ("Operating Margin", q.operating_margin, True),
-                    ("Net Margin", q.net_margin, True),
-                    ("FCF Margin", q.fcf_margin, True),
-                    ("ROA", q.roa, True),
-                    ("Asset Turnover", q.asset_turnover, False),
-                ]
+                # Helper to determine quality indicator
+                def quality_indicator(val, good, mid):
+                    if val is None:
+                        return ""
+                    if val >= good:
+                        return "🟢"
+                    if val >= mid:
+                        return "🟡"
+                    return "🔴"
 
-                for i, (label, val, is_pct) in enumerate(metrics_data):
-                    with cols[i % 4]:
-                        display_val = format_pct(val) if is_pct else format_ratio(val)
-                        st.metric(label, display_val)
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    ind = quality_indicator(q.roic, 0.15, 0.08)
+                    st.metric(f"ROIC {ind}", format_pct(q.roic), help="Return on Invested Capital. >15% excellent, 8-15% good")
+                with col2:
+                    ind = quality_indicator(q.roe, 0.20, 0.10)
+                    st.metric(f"ROE {ind}", format_pct(q.roe), help="Return on Equity. >20% excellent (check debt), 10-20% good")
+                with col3:
+                    ind = quality_indicator(q.gross_margin, 0.60, 0.30)
+                    st.metric(f"Gross Margin {ind}", format_pct(q.gross_margin), help="Pricing power indicator. >60% excellent, 30-60% good")
+                with col4:
+                    ind = quality_indicator(q.operating_margin, 0.20, 0.10)
+                    st.metric(f"Op. Margin {ind}", format_pct(q.operating_margin), help="Operating efficiency. >20% excellent")
+
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    ind = quality_indicator(q.net_margin, 0.15, 0.05)
+                    st.metric(f"Net Margin {ind}", format_pct(q.net_margin), help="Bottom line profitability")
+                with col2:
+                    ind = quality_indicator(q.fcf_margin, 0.20, 0.10)
+                    st.metric(f"FCF Margin {ind}", format_pct(q.fcf_margin), help="Cash profit per dollar revenue. >20% = cash machine")
+                with col3:
+                    st.metric("ROA", format_pct(q.roa), help="Return on Assets")
+                with col4:
+                    st.metric("Asset Turn", format_ratio(q.asset_turnover), help="Revenue efficiency per dollar of assets")
+
+                st.caption("🟢 Excellent  🟡 Good  🔴 Below average")
 
         with tab2:
             if metrics and metrics.traditional and metrics.traditional.growth:
                 g = metrics.traditional.growth
-                cols = st.columns(4)
 
-                metrics_data = [
-                    ("Revenue Growth 1Y", g.revenue_growth_1y),
-                    ("Revenue CAGR 3Y", g.revenue_growth_3y_cagr),
-                    ("Revenue CAGR 5Y", g.revenue_growth_5y_cagr),
-                    ("Earnings Growth 1Y", g.earnings_growth_1y),
-                    ("Earnings CAGR 3Y", g.earnings_growth_3y_cagr),
-                    ("FCF Growth 1Y", g.fcf_growth_1y),
-                    ("FCF CAGR 3Y", g.fcf_growth_3y_cagr),
-                ]
+                def growth_indicator(val):
+                    if val is None:
+                        return ""
+                    if val >= 0.15:
+                        return "🟢"
+                    if val >= 0.05:
+                        return "🟡"
+                    return "🔴"
 
-                for i, (label, val) in enumerate(metrics_data):
-                    with cols[i % 4]:
-                        st.metric(label, format_pct(val))
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    ind = growth_indicator(g.revenue_growth_1y)
+                    st.metric(f"Rev Growth 1Y {ind}", format_pct(g.revenue_growth_1y), help="Year-over-year revenue change")
+                with col2:
+                    ind = growth_indicator(g.revenue_growth_3y_cagr)
+                    st.metric(f"Rev CAGR 3Y {ind}", format_pct(g.revenue_growth_3y_cagr), help="3-year compound annual growth rate")
+                with col3:
+                    ind = growth_indicator(g.revenue_growth_5y_cagr)
+                    st.metric(f"Rev CAGR 5Y {ind}", format_pct(g.revenue_growth_5y_cagr), help="5-year compound annual growth rate")
+                with col4:
+                    ind = growth_indicator(g.earnings_growth_1y)
+                    st.metric(f"Earnings 1Y {ind}", format_pct(g.earnings_growth_1y), help="Year-over-year earnings change")
+
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    ind = growth_indicator(g.earnings_growth_3y_cagr)
+                    st.metric(f"Earn CAGR 3Y {ind}", format_pct(g.earnings_growth_3y_cagr), help="Should track or exceed revenue growth")
+                with col2:
+                    ind = growth_indicator(g.fcf_growth_1y)
+                    st.metric(f"FCF Growth 1Y {ind}", format_pct(g.fcf_growth_1y), help="Cash flow growth")
+                with col3:
+                    ind = growth_indicator(g.fcf_growth_3y_cagr)
+                    st.metric(f"FCF CAGR 3Y {ind}", format_pct(g.fcf_growth_3y_cagr), help="3-year cash flow growth")
+
+                st.caption("🟢 >15% High growth  🟡 5-15% Moderate  🔴 <5% Slow")
 
         with tab3:
             if metrics and metrics.traditional and metrics.traditional.strength:
                 s = metrics.traditional.strength
-                cols = st.columns(4)
 
-                st.metric("Debt/Equity", format_ratio(s.debt_to_equity))
-                st.metric("Current Ratio", format_ratio(s.current_ratio))
-                st.metric("Interest Coverage", f"{s.interest_coverage:.1f}x" if s.interest_coverage else "—")
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    de = s.debt_to_equity
+                    ind = "🟢" if de and de < 0.5 else "🟡" if de and de < 1.5 else "🔴" if de else ""
+                    st.metric(f"Debt/Equity {ind}", format_ratio(de), help="<0.5 conservative, 0.5-1.5 moderate, >1.5 high leverage")
+                with col2:
+                    cr = s.current_ratio
+                    ind = "🟢" if cr and 1.5 <= cr <= 3 else "🟡" if cr and cr >= 1 else "🔴" if cr else ""
+                    st.metric(f"Current Ratio {ind}", format_ratio(cr), help="1.5-3.0 healthy, <1.0 liquidity risk")
+                with col3:
+                    ic = s.interest_coverage
+                    ind = "🟢" if ic and ic > 8 else "🟡" if ic and ic > 3 else "🔴" if ic else ""
+                    st.metric(f"Int. Coverage {ind}", f"{ic:.1f}x" if ic else "—", help=">8x very safe, 3-8x adequate, <3x risky")
+
+                st.caption("🟢 Strong  🟡 Adequate  🔴 Watch closely")
 
         with tab4:
             if metrics and metrics.traditional and metrics.traditional.valuation:
                 v = metrics.traditional.valuation
-                cols = st.columns(4)
 
-                metrics_data = [
-                    ("P/E", v.pe_ratio, False),
-                    ("P/S", v.ps_ratio, False),
-                    ("P/B", v.pb_ratio, False),
-                    ("EV/EBITDA", v.ev_to_ebitda, False),
-                    ("EV/Sales", v.ev_to_sales, False),
-                    ("FCF Yield", v.fcf_yield, True),
-                    ("Earnings Yield", v.earnings_yield, True),
-                    ("PEG", v.peg_ratio, False),
-                ]
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    pe = v.pe_ratio
+                    ind = "🟢" if pe and 10 <= pe <= 20 else "🟡" if pe and pe <= 40 else "🔴" if pe else ""
+                    st.metric(f"P/E {ind}", format_ratio(pe), help="10-20x reasonable, 20-40x growth premium, >40x speculative")
+                with col2:
+                    st.metric("P/S", format_ratio(v.ps_ratio), help="Price to Sales ratio")
+                with col3:
+                    st.metric("P/B", format_ratio(v.pb_ratio), help="Price to Book ratio")
+                with col4:
+                    ev = v.ev_to_ebitda
+                    ind = "🟢" if ev and ev < 10 else "🟡" if ev and ev < 15 else "🔴" if ev else ""
+                    st.metric(f"EV/EBITDA {ind}", format_ratio(ev), help="<10x cheap, 10-15x fair, >15x premium")
 
-                for i, (label, val, is_pct) in enumerate(metrics_data):
-                    with cols[i % 4]:
-                        display_val = format_pct(val) if is_pct else format_ratio(val)
-                        st.metric(label, display_val)
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("EV/Sales", format_ratio(v.ev_to_sales), help="Enterprise Value to Sales")
+                with col2:
+                    fy = v.fcf_yield
+                    ind = "🟢" if fy and fy > 0.05 else "🟡" if fy and fy > 0.02 else "🔴" if fy else ""
+                    st.metric(f"FCF Yield {ind}", format_pct(fy), help=">5% attractive, 2-5% fair, <2% expensive")
+                with col3:
+                    ey = v.earnings_yield
+                    ind = "🟢" if ey and ey > 0.05 else "🟡" if ey and ey > 0.03 else "🔴" if ey else ""
+                    st.metric(f"Earn Yield {ind}", format_pct(ey), help="Inverse of P/E. Higher = cheaper")
+                with col4:
+                    peg = v.peg_ratio
+                    ind = "🟢" if peg and peg < 1 else "🟡" if peg and peg < 2 else "🔴" if peg else ""
+                    st.metric(f"PEG {ind}", format_ratio(peg), help="<1 undervalued, 1-2 fair, >2 expensive for growth")
+
+                st.caption("🟢 Attractive  🟡 Fair  🔴 Expensive")
 
         # Financials chart
         if financials.income_statements:
