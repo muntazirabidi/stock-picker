@@ -175,18 +175,7 @@ if st.button("📊 Score Universe", type="primary"):
 
             # Display table
             st.dataframe(
-                filtered_df.style.format({
-                    "Score": "{:.1f}",
-                    "Quality": "{:.1f}",
-                    "Growth": "{:.1f}",
-                    "Strength": "{:.1f}",
-                    "Valuation": "{:.1f}",
-                }).background_gradient(
-                    subset=["Score"],
-                    cmap="RdYlGn",
-                    vmin=0,
-                    vmax=100,
-                ),
+                filtered_df,
                 use_container_width=True,
                 height=500,
             )
