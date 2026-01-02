@@ -402,8 +402,8 @@ if should_show_analysis:
         # Price Chart Tab
         with tab_chart:
             # Time period selector - Google Finance style
-            period_cols = st.columns(8)
-            periods = ["1W", "1M", "3M", "6M", "YTD", "1Y", "2Y", "5Y"]
+            period_cols = st.columns(4)
+            periods = ["1M", "1Y", "2Y", "5Y"]
 
             # Initialize period in session state
             if "chart_period" not in st.session_state:
