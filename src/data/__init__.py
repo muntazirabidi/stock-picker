@@ -15,6 +15,13 @@ from .models import (
     Tier,
     UniverseStock,
 )
+from .polygon_client import (
+    NewsArticle,
+    PolygonClient,
+    PriceBar,
+    TechnicalIndicator,
+    TickerSnapshot,
+)
 from .universe import UniverseLoader, get_universe_summary
 from .yahoo_client import YahooClient
 
@@ -24,7 +31,13 @@ __all__ = [
     # Data Clients
     "YahooClient",  # Primary (free)
     "FMPClient",  # Requires paid subscription
+    "PolygonClient",  # Market data, charts, technicals
     "FMPError",
+    # Polygon Models
+    "PriceBar",
+    "TechnicalIndicator",
+    "NewsArticle",
+    "TickerSnapshot",
     # Models
     "BalanceSheet",
     "CashFlowStatement",

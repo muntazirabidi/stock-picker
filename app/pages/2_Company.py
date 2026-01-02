@@ -2,6 +2,8 @@
 
 import streamlit as st
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from datetime import date, timedelta
 
 st.set_page_config(
     page_title="Company | Equity Research",
@@ -33,18 +35,6 @@ st.markdown("""
     .company-meta {
         font-size: 0.9rem;
         color: #888;
-    }
-
-    .score-circle {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 auto;
     }
 
     .metric-card {
@@ -87,6 +77,25 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         font-size: 0.9rem;
     }
+
+    .news-card {
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-left: 3px solid #1565c0;
+    }
+
+    .news-title {
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+
+    .news-meta {
+        font-size: 0.75rem;
+        color: #888;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -110,6 +119,44 @@ def analyze_company(ticker: str):
     scores = scorer.score_universe([metrics])
 
     return financials, metrics, scores[0] if scores else None
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def get_price_data(ticker: str, days: int = 365):
+    """Fetch price data from Polygon."""
+    try:
+        from src.data import PolygonClient
+        client = PolygonClient()
+        end = date.today()
+        start = end - timedelta(days=days)
+        return client.get_daily_bars(ticker, start, end, limit=days)
+    except Exception:
+        return []
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def get_technical_indicators(ticker: str):
+    """Fetch technical indicators from Polygon."""
+    try:
+        from src.data import PolygonClient
+        client = PolygonClient()
+        sma_50 = client.get_sma(ticker, window=50, limit=100)
+        sma_200 = client.get_sma(ticker, window=200, limit=100)
+        rsi = client.get_rsi(ticker, window=14, limit=100)
+        return sma_50, sma_200, rsi
+    except Exception:
+        return [], [], []
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def get_news(ticker: str, limit: int = 10):
+    """Fetch news from Polygon."""
+    try:
+        from src.data import PolygonClient
+        client = PolygonClient()
+        return client.get_news(ticker, limit=limit)
+    except Exception:
+        return []
 
 
 def format_large_number(num):
@@ -285,14 +332,135 @@ if ticker and analyze_btn:
 
             st.markdown("---")
 
-        # Detailed metrics tabs
-        tab1, tab2, tab3, tab4 = st.tabs(["Quality", "Growth", "Strength", "Valuation"])
+        # Main tabs
+        tab_chart, tab_quality, tab_growth, tab_strength, tab_valuation, tab_news = st.tabs(
+            ["Price Chart", "Quality", "Growth", "Strength", "Valuation", "News"]
+        )
 
-        with tab1:
+        # Price Chart Tab
+        with tab_chart:
+            with st.spinner("Loading price data..."):
+                bars = get_price_data(ticker, days=365)
+                sma_50, sma_200, rsi = get_technical_indicators(ticker)
+
+            if bars:
+                # Create subplot with price and RSI
+                fig = make_subplots(
+                    rows=2, cols=1,
+                    shared_xaxes=True,
+                    vertical_spacing=0.05,
+                    row_heights=[0.7, 0.3],
+                    subplot_titles=(f"{ticker} Price", "RSI (14)")
+                )
+
+                # Price line
+                dates = [b.date for b in bars]
+                closes = [b.close for b in bars]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=dates,
+                        y=closes,
+                        name="Price",
+                        line=dict(color="#1565c0", width=2),
+                    ),
+                    row=1, col=1
+                )
+
+                # SMA 50
+                if sma_50:
+                    sma_dates = [s.date for s in sma_50]
+                    sma_vals = [s.value for s in sma_50]
+                    fig.add_trace(
+                        go.Scatter(
+                            x=sma_dates,
+                            y=sma_vals,
+                            name="SMA 50",
+                            line=dict(color="#ef6c00", width=1, dash="dot"),
+                        ),
+                        row=1, col=1
+                    )
+
+                # SMA 200
+                if sma_200:
+                    sma_dates = [s.date for s in sma_200]
+                    sma_vals = [s.value for s in sma_200]
+                    fig.add_trace(
+                        go.Scatter(
+                            x=sma_dates,
+                            y=sma_vals,
+                            name="SMA 200",
+                            line=dict(color="#2e7d32", width=1, dash="dot"),
+                        ),
+                        row=1, col=1
+                    )
+
+                # RSI
+                if rsi:
+                    rsi_dates = [r.date for r in rsi]
+                    rsi_vals = [r.value for r in rsi]
+                    fig.add_trace(
+                        go.Scatter(
+                            x=rsi_dates,
+                            y=rsi_vals,
+                            name="RSI",
+                            line=dict(color="#9c27b0", width=2),
+                        ),
+                        row=2, col=1
+                    )
+
+                    # RSI overbought/oversold lines
+                    fig.add_hline(y=70, line_dash="dash", line_color="#c62828", opacity=0.5, row=2, col=1)
+                    fig.add_hline(y=30, line_dash="dash", line_color="#2e7d32", opacity=0.5, row=2, col=1)
+
+                fig.update_layout(
+                    height=500,
+                    margin=dict(l=0, r=0, t=40, b=0),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    plot_bgcolor="white",
+                    paper_bgcolor="white",
+                    hovermode="x unified",
+                )
+
+                fig.update_xaxes(showgrid=False)
+                fig.update_yaxes(showgrid=True, gridcolor="#f0f0f0")
+
+                st.plotly_chart(fig, use_container_width=True)
+
+                # Price stats
+                if len(closes) > 1:
+                    col1, col2, col3, col4 = st.columns(4)
+                    current = closes[-1]
+                    high_52w = max(closes)
+                    low_52w = min(closes)
+                    change_ytd = ((current - closes[0]) / closes[0]) * 100
+
+                    with col1:
+                        st.metric("Current", f"${current:.2f}")
+                    with col2:
+                        st.metric("52W High", f"${high_52w:.2f}", f"{((current/high_52w)-1)*100:.1f}%")
+                    with col3:
+                        st.metric("52W Low", f"${low_52w:.2f}", f"{((current/low_52w)-1)*100:+.1f}%")
+                    with col4:
+                        st.metric("YTD Change", f"{change_ytd:+.1f}%")
+
+                # RSI interpretation
+                if rsi:
+                    latest_rsi = rsi[-1].value
+                    if latest_rsi >= 70:
+                        st.warning(f"RSI at {latest_rsi:.0f} - Overbought territory (>70)")
+                    elif latest_rsi <= 30:
+                        st.success(f"RSI at {latest_rsi:.0f} - Oversold territory (<30)")
+                    else:
+                        st.info(f"RSI at {latest_rsi:.0f} - Neutral range (30-70)")
+            else:
+                st.info("Price data not available. Check if Polygon API key is configured.")
+
+        # Quality Tab
+        with tab_quality:
             if metrics and metrics.traditional and metrics.traditional.quality:
                 q = metrics.traditional.quality
 
-                # Helper to determine quality indicator
                 def quality_indicator(val, good, mid):
                     if val is None:
                         return ""
@@ -330,7 +498,8 @@ if ticker and analyze_btn:
 
                 st.caption("🟢 Excellent  🟡 Good  🔴 Below average")
 
-        with tab2:
+        # Growth Tab
+        with tab_growth:
             if metrics and metrics.traditional and metrics.traditional.growth:
                 g = metrics.traditional.growth
 
@@ -370,7 +539,8 @@ if ticker and analyze_btn:
 
                 st.caption("🟢 >15% High growth  🟡 5-15% Moderate  🔴 <5% Slow")
 
-        with tab3:
+        # Strength Tab
+        with tab_strength:
             if metrics and metrics.traditional and metrics.traditional.strength:
                 s = metrics.traditional.strength
 
@@ -390,7 +560,8 @@ if ticker and analyze_btn:
 
                 st.caption("🟢 Strong  🟡 Adequate  🔴 Watch closely")
 
-        with tab4:
+        # Valuation Tab
+        with tab_valuation:
             if metrics and metrics.traditional and metrics.traditional.valuation:
                 v = metrics.traditional.valuation
 
@@ -425,6 +596,36 @@ if ticker and analyze_btn:
                     st.metric(f"PEG {ind}", format_ratio(peg), help="<1 undervalued, 1-2 fair, >2 expensive for growth")
 
                 st.caption("🟢 Attractive  🟡 Fair  🔴 Expensive")
+
+        # News Tab
+        with tab_news:
+            with st.spinner("Loading news..."):
+                news = get_news(ticker, limit=10)
+
+            if news:
+                for article in news:
+                    time_ago = ""
+                    if article.published:
+                        delta = date.today() - article.published.date()
+                        if delta.days == 0:
+                            time_ago = "Today"
+                        elif delta.days == 1:
+                            time_ago = "Yesterday"
+                        else:
+                            time_ago = f"{delta.days}d ago"
+
+                    st.markdown(f"""
+                    <div class="news-card">
+                        <div class="news-title">{article.title}</div>
+                        <div class="news-meta">{article.publisher_name or 'Unknown'} · {time_ago}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    if article.article_url:
+                        st.markdown(f"[Read more]({article.article_url})")
+                    st.markdown("")
+            else:
+                st.info("No recent news available.")
 
         # Financials chart
         if financials.income_statements:
