@@ -189,16 +189,38 @@ def format_ratio(num):
 # Page header
 st.markdown('<p class="page-title">Company Analysis</p>', unsafe_allow_html=True)
 
+# Initialize session state for selected ticker
+if "selected_ticker" not in st.session_state:
+    st.session_state.selected_ticker = None
+if "auto_analyze" not in st.session_state:
+    st.session_state.auto_analyze = False
+
 # Sidebar
 with st.sidebar:
     st.markdown("### Search")
 
-    ticker = st.text_input(
+    # Text input for ticker
+    ticker_input = st.text_input(
         "Ticker symbol",
-        value="",
-        placeholder="MSFT",
+        value=st.session_state.selected_ticker or "",
+        placeholder="Enter ticker (e.g., MSFT)",
         label_visibility="collapsed",
     ).upper()
+
+    # Check if Universe has scored tickers
+    if "scored_df" in st.session_state and st.session_state.scored_df is not None:
+        scored_tickers = st.session_state.scored_df["Ticker"].tolist()
+        if scored_tickers:
+            st.markdown("##### From Universe")
+            selected_from_universe = st.selectbox(
+                "Select from scored stocks",
+                [""] + scored_tickers,
+                label_visibility="collapsed",
+                key="universe_select"
+            )
+            if selected_from_universe:
+                ticker_input = selected_from_universe
+                st.session_state.auto_analyze = True
 
     st.markdown("##### Quick picks")
     quick_picks = ["MSFT", "AAPL", "V", "COST", "HUBS", "CRWD"]
@@ -206,11 +228,19 @@ with st.sidebar:
     for i, pick in enumerate(quick_picks):
         with cols[i % 3]:
             if st.button(pick, use_container_width=True, key=f"pick_{pick}"):
-                ticker = pick
+                st.session_state.selected_ticker = pick
+                st.session_state.auto_analyze = True
+                st.rerun()
+
+    ticker = ticker_input.strip() if ticker_input else ""
 
     if ticker:
         st.markdown("---")
         analyze_btn = st.button("Analyze", type="primary", use_container_width=True)
+        # Auto-analyze if triggered by quick pick or universe selection
+        if st.session_state.auto_analyze:
+            analyze_btn = True
+            st.session_state.auto_analyze = False
     else:
         analyze_btn = False
 
