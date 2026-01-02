@@ -635,6 +635,80 @@ class YahooClient:
         except Exception:
             return []
 
+    def get_sp400_midcap_tickers(self) -> list[str]:
+        """Get S&P 400 MidCap ticker list from Wikipedia.
+
+        Returns:
+            List of ticker symbols
+        """
+        cache_key = "universe:sp400"
+        cached = self.cache.get(cache_key)
+        if cached:
+            return cached
+
+        try:
+            url = "https://en.wikipedia.org/wiki/List_of_S%26P_400_companies"
+            tables = self._fetch_wikipedia_table(url)
+            df = tables[0]
+            # Column might be "Symbol" or "Ticker symbol"
+            if "Symbol" in df.columns:
+                tickers = df["Symbol"].str.replace(".", "-", regex=False).tolist()
+            elif "Ticker symbol" in df.columns:
+                tickers = df["Ticker symbol"].str.replace(".", "-", regex=False).tolist()
+            else:
+                return []
+            self.cache.set(cache_key, tickers)
+            return tickers
+        except Exception:
+            return []
+
+    def get_sp600_smallcap_tickers(self) -> list[str]:
+        """Get S&P 600 SmallCap ticker list from Wikipedia.
+
+        Returns:
+            List of ticker symbols
+        """
+        cache_key = "universe:sp600"
+        cached = self.cache.get(cache_key)
+        if cached:
+            return cached
+
+        try:
+            url = "https://en.wikipedia.org/wiki/List_of_S%26P_600_companies"
+            tables = self._fetch_wikipedia_table(url)
+            df = tables[0]
+            if "Symbol" in df.columns:
+                tickers = df["Symbol"].str.replace(".", "-", regex=False).tolist()
+            elif "Ticker symbol" in df.columns:
+                tickers = df["Ticker symbol"].str.replace(".", "-", regex=False).tolist()
+            else:
+                return []
+            self.cache.set(cache_key, tickers)
+            return tickers
+        except Exception:
+            return []
+
+    def get_russell1000_tickers(self) -> list[str]:
+        """Get Russell 1000 (large cap) tickers - uses S&P 500 + extras.
+
+        Note: Full Russell 1000 list not freely available on Wikipedia.
+        This returns combined S&P 500 + Nasdaq 100 as a proxy for large caps.
+
+        Returns:
+            List of ticker symbols
+        """
+        cache_key = "universe:russell1000_proxy"
+        cached = self.cache.get(cache_key)
+        if cached:
+            return cached
+
+        # Combine S&P 500 and Nasdaq 100 as proxy
+        sp500 = self.get_sp500_tickers()
+        nasdaq = self.get_nasdaq100_tickers()
+        combined = list(set(sp500 + nasdaq))
+        self.cache.set(cache_key, combined)
+        return combined
+
     # -------------------------------------------------------------------------
     # Utilities
     # -------------------------------------------------------------------------

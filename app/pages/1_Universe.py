@@ -47,10 +47,19 @@ def load_universe(universe_type: str) -> list[str]:
         return client.get_sp500_tickers()
     elif universe_type == "Nasdaq 100":
         return client.get_nasdaq100_tickers()
-    elif universe_type == "Combined":
+    elif universe_type == "S&P 400 MidCap":
+        return client.get_sp400_midcap_tickers()
+    elif universe_type == "S&P 600 SmallCap":
+        return client.get_sp600_smallcap_tickers()
+    elif universe_type == "Combined (Large)":
         sp500 = client.get_sp500_tickers()
         nasdaq = client.get_nasdaq100_tickers()
         return list(set(sp500 + nasdaq))
+    elif universe_type == "All S&P (500+400+600)":
+        sp500 = client.get_sp500_tickers()
+        sp400 = client.get_sp400_midcap_tickers()
+        sp600 = client.get_sp600_smallcap_tickers()
+        return list(set(sp500 + sp400 + sp600))
     return []
 
 
@@ -106,7 +115,15 @@ with st.sidebar:
 
     universe_type = st.selectbox(
         "Select universe",
-        ["S&P 500", "Nasdaq 100", "Combined", "Custom"],
+        [
+            "S&P 500",
+            "Nasdaq 100",
+            "S&P 400 MidCap",
+            "S&P 600 SmallCap",
+            "Combined (Large)",
+            "All S&P (500+400+600)",
+            "Custom"
+        ],
         label_visibility="collapsed",
     )
 
