@@ -6,6 +6,7 @@ import Universe from '@/pages/Universe'
 import ValuePicks from '@/pages/ValuePicks'
 import Company from '@/pages/Company'
 import Portfolio from '@/pages/Portfolio'
+import Learning from '@/pages/Learning'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/company" element={<Company />} />
             <Route path="/company/:ticker" element={<Company />} />
             <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/learning" element={<Learning />} />
           </Routes>
         </Layout>
       </BrowserRouter>

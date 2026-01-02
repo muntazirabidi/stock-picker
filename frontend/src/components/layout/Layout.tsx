@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { BarChart3, Building2, Briefcase, Home, TrendingUp, Gem } from 'lucide-react'
+import { BarChart3, Building2, Briefcase, Home, TrendingUp, Gem, BookOpen } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: Home },
@@ -8,6 +8,7 @@ const navItems = [
   { path: '/value-picks', label: 'Value Picks', icon: Gem },
   { path: '/company', label: 'Company', icon: Building2 },
   { path: '/portfolio', label: 'Portfolio', icon: Briefcase },
+  { path: '/learning', label: 'Learning', icon: BookOpen },
 ]
 
 interface LayoutProps {
