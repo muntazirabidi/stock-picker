@@ -11,9 +11,9 @@ router = APIRouter()
 async def get_cache_stats() -> CacheStats:
     """Get cache statistics."""
     try:
-        from src.data.yahoo_client import YahooFinanceClient
+        from src.data.yahoo_client import YahooClient
 
-        client = YahooFinanceClient()
+        client = YahooClient()
         stats = client.cache_stats()
 
         return CacheStats(

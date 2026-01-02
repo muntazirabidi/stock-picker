@@ -34,36 +34,36 @@ export function formatCompactNumber(value: number): string {
 }
 
 export function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-success'
-  if (score >= 60) return 'text-primary'
-  if (score >= 40) return 'text-warning'
-  return 'text-error'
+  if (score >= 80) return 'text-emerald-400'
+  if (score >= 60) return 'text-blue-400'
+  if (score >= 40) return 'text-amber-400'
+  return 'text-red-400'
 }
 
 export function getScoreBgColor(score: number): string {
-  if (score >= 80) return 'bg-success/10 text-success'
-  if (score >= 60) return 'bg-primary/10 text-primary'
-  if (score >= 40) return 'bg-warning/10 text-warning'
-  return 'bg-error/10 text-error'
+  if (score >= 80) return 'bg-emerald-500/10 text-emerald-400'
+  if (score >= 60) return 'bg-blue-500/10 text-blue-400'
+  if (score >= 40) return 'bg-amber-500/10 text-amber-400'
+  return 'bg-red-500/10 text-red-400'
 }
 
 export function getStageColor(stage: string): string {
   switch (stage.toLowerCase()) {
     case 'compounder':
-      return 'bg-success/10 text-success border-success/20'
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
     case 'growth':
-      return 'bg-primary/10 text-primary border-primary/20'
+      return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
     case 'mature':
-      return 'bg-muted/10 text-muted border-muted/20'
+      return 'bg-slate-500/10 text-slate-400 border-slate-500/20'
     case 'speculative':
-      return 'bg-warning/10 text-warning border-warning/20'
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
     default:
-      return 'bg-muted/10 text-muted border-muted/20'
+      return 'bg-slate-500/10 text-slate-400 border-slate-500/20'
   }
 }
 
 export function getChangeColor(value: number): string {
-  if (value > 0) return 'text-success'
-  if (value < 0) return 'text-error'
-  return 'text-muted'
+  if (value > 0) return 'text-emerald-400'
+  if (value < 0) return 'text-red-400'
+  return 'text-slate-400'
 }

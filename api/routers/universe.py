@@ -14,9 +14,9 @@ async def get_universe_tickers(
 ) -> list[str]:
     """Get tickers for a specific universe."""
     try:
-        from src.data.yahoo_client import YahooFinanceClient
+        from src.data.yahoo_client import YahooClient
 
-        client = YahooFinanceClient()
+        client = YahooClient()
 
         if type == "sp500":
             return client.get_sp500_tickers()
@@ -42,11 +42,11 @@ async def get_universe_tickers(
 async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
     """Score a list of tickers."""
     try:
-        from src.data.yahoo_client import YahooFinanceClient
+        from src.data.yahoo_client import YahooClient
         from src.metrics.calculator import MetricsCalculator
         from src.scoring.composite import UniverseScorer
 
-        client = YahooFinanceClient()
+        client = YahooClient()
         calculator = MetricsCalculator()
         scorer = UniverseScorer()
 

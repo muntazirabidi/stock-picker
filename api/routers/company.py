@@ -25,8 +25,8 @@ router = APIRouter()
 
 def get_client():
     """Get Yahoo Finance client."""
-    from src.data.yahoo_client import YahooFinanceClient
-    return YahooFinanceClient()
+    from src.data.yahoo_client import YahooClient
+    return YahooClient()
 
 
 @router.get("/{ticker}/profile")

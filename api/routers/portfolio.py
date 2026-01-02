@@ -205,7 +205,7 @@ async def deploy_capital(request: DeployRequest) -> DeploymentPlan:
         from src.portfolio.deployment import DeploymentAdvisor
         from src.metrics.calculator import MetricsCalculator
         from src.scoring.composite import UniverseScorer
-        from src.data.yahoo_client import YahooFinanceClient
+        from src.data.yahoo_client import YahooClient
 
         tracker = get_tracker()
         positions = tracker.get_all_positions()
@@ -224,7 +224,7 @@ async def deploy_capital(request: DeployRequest) -> DeploymentPlan:
         prices = get_current_prices(tickers)
 
         # Calculate scores for existing holdings
-        client = YahooFinanceClient()
+        client = YahooClient()
         calculator = MetricsCalculator()
         scorer = UniverseScorer()
 
