@@ -125,7 +125,7 @@ def analyze_company(ticker: str):
     return financials, metrics, scores[0] if scores else None
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)  # Cache for 24 hours - EOD data is fine for fundamentals
 def get_price_data(ticker: str, days: int = 365):
     """Fetch price data from Polygon."""
     try:
@@ -154,7 +154,7 @@ def get_period_days(period: str) -> int:
     return periods.get(period, 365)
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)  # Cache for 24 hours
 def get_technical_indicators(ticker: str):
     """Fetch technical indicators from Polygon."""
     try:
@@ -168,7 +168,7 @@ def get_technical_indicators(ticker: str):
         return [], [], []
 
 
-@st.cache_data(ttl=600, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour - news updates more frequently
 def get_news(ticker: str, limit: int = 10):
     """Fetch news from Polygon."""
     try:
