@@ -36,6 +36,19 @@ export interface CompanyScore {
   valuation_score: number
 }
 
+export interface CompanyScoreWithValuation extends CompanyScore {
+  sector: string | null
+  pe_ratio: number | null
+  peg_ratio: number | null
+  ps_ratio: number | null
+  pb_ratio: number | null
+  ev_ebitda: number | null
+  fcf_yield: number | null
+  earnings_yield: number | null
+  value_score: number | null
+  market_cap: number | null
+}
+
 export type CompanyStage = 'mature' | 'compounder' | 'growth' | 'speculative'
 
 export interface StageClassification {

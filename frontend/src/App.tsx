@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Layout } from '@/components/layout/Layout'
 import Dashboard from '@/pages/Dashboard'
 import Universe from '@/pages/Universe'
+import ValuePicks from '@/pages/ValuePicks'
 import Company from '@/pages/Company'
 import Portfolio from '@/pages/Portfolio'
 
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/universe" element={<Universe />} />
+            <Route path="/value-picks" element={<ValuePicks />} />
             <Route path="/company" element={<Company />} />
             <Route path="/company/:ticker" element={<Company />} />
             <Route path="/portfolio" element={<Portfolio />} />

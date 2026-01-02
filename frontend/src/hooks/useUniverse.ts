@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUniverseTickers, scoreUniverse } from '@/api/client'
-import type { UniverseType, CompanyScore } from '@/types'
+import { getUniverseTickers, scoreUniverse, scoreUniverseWithValuation } from '@/api/client'
+import type { UniverseType, CompanyScore, CompanyScoreWithValuation } from '@/types'
 
 export function useUniverseTickers(type: UniverseType) {
   return useQuery({
@@ -17,6 +17,17 @@ export function useScoreUniverse() {
     mutationFn: (tickers: string[]) => scoreUniverse(tickers),
     onSuccess: (data) => {
       queryClient.setQueryData(['universe', 'scores'], data)
+    },
+  })
+}
+
+export function useScoreUniverseWithValuation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (tickers: string[]) => scoreUniverseWithValuation(tickers),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['universe', 'value-scores'], data)
     },
   })
 }

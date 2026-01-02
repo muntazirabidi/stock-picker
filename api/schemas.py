@@ -16,6 +16,30 @@ class CompanyScore(BaseModel):
     valuation_score: float
 
 
+class CompanyScoreWithValuation(BaseModel):
+    """Extended score with detailed valuation metrics for value investing."""
+    ticker: str
+    name: str
+    sector: Optional[str] = None
+    stage: str
+    composite_score: float
+    quality_score: float
+    growth_score: float
+    strength_score: float
+    valuation_score: float
+    # Detailed valuation metrics
+    pe_ratio: Optional[float] = None
+    peg_ratio: Optional[float] = None
+    ps_ratio: Optional[float] = None
+    pb_ratio: Optional[float] = None
+    ev_ebitda: Optional[float] = None
+    fcf_yield: Optional[float] = None
+    earnings_yield: Optional[float] = None
+    # Combined value score (quality + valuation weighted)
+    value_score: Optional[float] = None
+    market_cap: Optional[float] = None
+
+
 class QualityMetrics(BaseModel):
     roic: Optional[float] = None
     roe: Optional[float] = None

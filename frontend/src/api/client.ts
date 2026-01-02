@@ -1,6 +1,7 @@
 import type {
   CompanyProfile,
   CompanyScore,
+  CompanyScoreWithValuation,
   CompanyMetrics,
   CompanyFinancials,
   PriceBar,
@@ -38,6 +39,13 @@ export async function getUniverseTickers(type: UniverseType): Promise<string[]> 
 
 export async function scoreUniverse(tickers: string[]): Promise<CompanyScore[]> {
   return fetchApi<CompanyScore[]>('/universe/score', {
+    method: 'POST',
+    body: JSON.stringify({ tickers }),
+  })
+}
+
+export async function scoreUniverseWithValuation(tickers: string[]): Promise<CompanyScoreWithValuation[]> {
+  return fetchApi<CompanyScoreWithValuation[]>('/universe/score-with-valuation', {
     method: 'POST',
     body: JSON.stringify({ tickers }),
   })

@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useUniverseTickers, useScoreUniverse } from '@/hooks/useUniverse'
 import { cn, getStageColor, getScoreColor } from '@/lib/utils'
 import type { UniverseType, CompanyScore } from '@/types'
-import { Download, RefreshCw, Search, Info, Zap } from 'lucide-react'
+import { Download, RefreshCw, Search, Info, Zap, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const universeOptions = [
   { value: 'sp500', label: 'S&P 500 (503)' },
@@ -45,15 +45,37 @@ const sortOptions = [
   { value: 'ticker', label: 'Ticker' },
 ]
 
+type SortKey = 'ticker' | 'name' | 'stage' | 'score' | 'quality' | 'growth' | 'strength' | 'value'
+type SortDirection = 'asc' | 'desc'
+
 export default function Universe() {
   const navigate = useNavigate()
   const [universeType, setUniverseType] = useState<UniverseType>('sp500')
   const [stageFilter, setStageFilter] = useState('all')
-  const [sortBy, setSortBy] = useState('score')
+  const [sortBy, setSortBy] = useState<SortKey>('score')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [scoreCount, setScoreCount] = useState(20) // Default to 20 stocks
   const [minScore, setMinScore] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
   const [scores, setScores] = useState<CompanyScore[]>([])
+
+  const handleSort = (key: SortKey) => {
+    if (sortBy === key) {
+      // Toggle direction if same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      // New column, default to desc for scores, asc for text
+      setSortBy(key)
+      setSortDirection(key === 'ticker' || key === 'name' ? 'asc' : 'desc')
+    }
+  }
+
+  const SortIcon = ({ column }: { column: SortKey }) => {
+    if (sortBy !== column) return <ArrowUpDown className="h-4 w-4 opacity-50" />
+    return sortDirection === 'asc'
+      ? <ArrowUp className="h-4 w-4 text-primary" />
+      : <ArrowDown className="h-4 w-4 text-primary" />
+  }
 
   const { data: tickers, isLoading: isLoadingTickers } = useUniverseTickers(universeType)
   const scoreMutation = useScoreUniverse()
@@ -89,26 +111,40 @@ export default function Universe() {
 
     // Sort
     result.sort((a, b) => {
+      let comparison = 0
       switch (sortBy) {
         case 'score':
-          return b.composite_score - a.composite_score
+          comparison = a.composite_score - b.composite_score
+          break
         case 'quality':
-          return b.quality_score - a.quality_score
+          comparison = a.quality_score - b.quality_score
+          break
         case 'growth':
-          return b.growth_score - a.growth_score
+          comparison = a.growth_score - b.growth_score
+          break
         case 'strength':
-          return b.strength_score - a.strength_score
+          comparison = a.strength_score - b.strength_score
+          break
         case 'value':
-          return b.valuation_score - a.valuation_score
+          comparison = a.valuation_score - b.valuation_score
+          break
         case 'ticker':
-          return a.ticker.localeCompare(b.ticker)
+          comparison = a.ticker.localeCompare(b.ticker)
+          break
+        case 'name':
+          comparison = a.name.localeCompare(b.name)
+          break
+        case 'stage':
+          comparison = a.stage.localeCompare(b.stage)
+          break
         default:
-          return 0
+          comparison = 0
       }
+      return sortDirection === 'asc' ? comparison : -comparison
     })
 
     return result
-  }, [scores, stageFilter, sortBy, minScore, searchTerm])
+  }, [scores, stageFilter, sortBy, sortDirection, minScore, searchTerm])
 
   const stats = useMemo(() => {
     if (!scores.length) return null
@@ -334,14 +370,70 @@ export default function Universe() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead>Ticker</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Quality</TableHead>
-                    <TableHead>Growth</TableHead>
-                    <TableHead>Strength</TableHead>
-                    <TableHead>Value</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('ticker')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Ticker <SortIcon column="ticker" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Name <SortIcon column="name" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('stage')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Stage <SortIcon column="stage" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('score')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Score <SortIcon column="score" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('quality')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Quality <SortIcon column="quality" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('growth')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Growth <SortIcon column="growth" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('strength')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Strength <SortIcon column="strength" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-primary transition-colors select-none"
+                      onClick={() => handleSort('value')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Value <SortIcon column="value" />
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
