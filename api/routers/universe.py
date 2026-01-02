@@ -76,9 +76,14 @@ async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
         logger.info(f"Scoring {len(all_metrics)} companies")
         scores = scorer.score_universe(all_metrics)
 
-        # Convert to response format
-        return [
-            CompanyScore(
+        # Convert to response format, filtering out entries with None scores
+        result = []
+        for s in scores:
+            # Skip if any required score is None
+            if any(v is None for v in [s.composite_score, s.quality_score, s.growth_score, s.strength_score, s.valuation_score]):
+                logger.warning(f"Skipping {s.ticker} due to None scores")
+                continue
+            result.append(CompanyScore(
                 ticker=s.ticker,
                 name=s.name,
                 stage=s.stage,
@@ -87,9 +92,8 @@ async def score_universe(request: ScoreRequest) -> list[CompanyScore]:
                 growth_score=s.growth_score,
                 strength_score=s.strength_score,
                 valuation_score=s.valuation_score,
-            )
-            for s in scores
-        ]
+            ))
+        return result
     except Exception as e:
         logger.error(f"Score universe error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
