@@ -4,6 +4,10 @@ import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import date, timedelta
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 st.set_page_config(
     page_title="Company | Equity Research",
@@ -130,7 +134,8 @@ def get_price_data(ticker: str, days: int = 365):
         end = date.today()
         start = end - timedelta(days=days)
         return client.get_daily_bars(ticker, start, end, limit=days)
-    except Exception:
+    except Exception as e:
+        st.error(f"Price data error: {e}")
         return []
 
 
