@@ -53,7 +53,7 @@ class FMPClient:
         self,
         api_key: str | None = None,
         cache_dir: Path | None = None,
-        cache_ttl_hours: int = 24,
+        cache_ttl_hours: int = 168,  # 7 days - fundamentals are quarterly
     ):
         settings = FMPSettings()
         self.api_key = api_key or settings.fmp_api_key

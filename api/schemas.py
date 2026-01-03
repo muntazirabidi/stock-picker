@@ -121,6 +121,11 @@ class CompanyProfile(BaseModel):
     country: str
     is_etf: bool
     is_actively_trading: bool
+    ceo: Optional[str] = None
+    employees: Optional[int] = None
+    ipo_date: Optional[str] = None
+    website: Optional[str] = None
+    image: Optional[str] = None
 
 
 class IncomeStatement(BaseModel):

@@ -40,6 +40,7 @@ env/
 
 # Data files (large/sensitive)
 data/cache/
+data/score_cache/
 data/processed/*.parquet
 data/portfolio.db
 

@@ -281,7 +281,7 @@ export default function Universe() {
           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground bg-accent/50 rounded-lg px-4 py-2">
             <Info className="h-4 w-4 text-primary" />
             <span>
-              Data is cached for 24 hours. First run fetches from API (~3-5s per stock).
+              Data is cached for 7 days (fundamentals are quarterly). First run fetches from API (~3-5s per stock).
               Subsequent runs use cache and are instant.
             </span>
           </div>

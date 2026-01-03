@@ -165,7 +165,7 @@ Environment variables (`.env`):
 
 ```bash
 FMP_API_KEY=your_api_key_here
-CACHE_TTL_HOURS=24
+CACHE_TTL_HOURS=168  # 7 days (fundamentals are quarterly)
 ```
 
 ## Contributing

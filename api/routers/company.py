@@ -50,6 +50,11 @@ async def get_company_profile(ticker: str) -> CompanyProfile:
             country=profile.country or "",
             is_etf=profile.is_etf,
             is_actively_trading=profile.is_actively_trading,
+            ceo=profile.ceo,
+            employees=profile.employees,
+            ipo_date=profile.ipo_date,
+            website=profile.website,
+            image=profile.image,
         )
     except HTTPException:
         raise
@@ -79,6 +84,11 @@ async def get_company_financials(ticker: str) -> CompanyFinancials:
                 country=financials.profile.country or "",
                 is_etf=financials.profile.is_etf,
                 is_actively_trading=financials.profile.is_actively_trading,
+                ceo=financials.profile.ceo,
+                employees=financials.profile.employees,
+                ipo_date=financials.profile.ipo_date,
+                website=financials.profile.website,
+                image=financials.profile.image,
             ),
             quote=Quote(
                 symbol=financials.quote.symbol,
@@ -94,7 +104,7 @@ async def get_company_financials(ticker: str) -> CompanyFinancials:
             ),
             income_statements=[
                 IncomeStatement(
-                    date=stmt.date,
+                    date=str(stmt.date),
                     revenue=stmt.revenue,
                     gross_profit=stmt.gross_profit,
                     operating_income=stmt.operating_income,
@@ -149,12 +159,12 @@ async def get_company_metrics(ticker: str) -> CompanyMetrics:
             )
             growth = GrowthMetrics(
                 revenue_growth_1y=t.growth.revenue_growth_1y,
-                revenue_cagr_3y=t.growth.revenue_cagr_3y,
-                revenue_cagr_5y=t.growth.revenue_cagr_5y,
+                revenue_cagr_3y=t.growth.revenue_growth_3y_cagr,
+                revenue_cagr_5y=t.growth.revenue_growth_5y_cagr,
                 earnings_growth_1y=t.growth.earnings_growth_1y,
-                earnings_cagr_3y=t.growth.earnings_cagr_3y,
+                earnings_cagr_3y=t.growth.earnings_growth_3y_cagr,
                 fcf_growth_1y=t.growth.fcf_growth_1y,
-                fcf_cagr_3y=t.growth.fcf_cagr_3y,
+                fcf_cagr_3y=t.growth.fcf_growth_3y_cagr,
             )
             strength = StrengthMetrics(
                 current_ratio=t.strength.current_ratio,
@@ -166,8 +176,8 @@ async def get_company_metrics(ticker: str) -> CompanyMetrics:
                 pe_ratio=t.valuation.pe_ratio,
                 ps_ratio=t.valuation.ps_ratio,
                 pb_ratio=t.valuation.pb_ratio,
-                ev_ebitda=t.valuation.ev_ebitda,
-                ev_sales=t.valuation.ev_sales,
+                ev_ebitda=t.valuation.ev_to_ebitda,
+                ev_sales=t.valuation.ev_to_sales,
                 fcf_yield=t.valuation.fcf_yield,
                 earnings_yield=t.valuation.earnings_yield,
                 peg_ratio=t.valuation.peg_ratio,

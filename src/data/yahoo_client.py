@@ -98,6 +98,11 @@ class YahooClient:
                 "country": info.get("country"),
                 "isEtf": info.get("quoteType") == "ETF",
                 "isActivelyTrading": True,
+                "ceo": info.get("companyOfficers", [{}])[0].get("name") if info.get("companyOfficers") else None,
+                "fullTimeEmployees": info.get("fullTimeEmployees"),
+                "ipoDate": None,  # Not directly available in yfinance
+                "website": info.get("website"),
+                "image": info.get("logo_url"),
             }
 
             self.cache.set(cache_key, profile_data)

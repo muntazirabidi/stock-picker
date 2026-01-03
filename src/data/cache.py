@@ -12,7 +12,7 @@ from pydantic_settings import BaseSettings
 class CacheSettings(BaseSettings):
     """Cache configuration from environment."""
 
-    cache_ttl_hours: int = 24
+    cache_ttl_hours: int = 168  # 7 days - fundamentals change quarterly
     cache_dir: Path = Path("data/cache")
 
     class Config:

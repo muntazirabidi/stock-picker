@@ -37,6 +37,11 @@ class CompanyProfile(BaseModel):
     country: str | None = None
     is_etf: bool = Field(False, alias="isEtf")
     is_actively_trading: bool = Field(True, alias="isActivelyTrading")
+    ceo: str | None = None
+    employees: int | None = Field(None, alias="fullTimeEmployees")
+    ipo_date: str | None = Field(None, alias="ipoDate")
+    website: str | None = None
+    image: str | None = None
 
     class Config:
         populate_by_name = True

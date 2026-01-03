@@ -13,7 +13,7 @@ router = APIRouter()
 
 # Score cache configuration
 SCORE_CACHE_DIR = Path("data/score_cache")
-SCORE_CACHE_TTL_HOURS = 24
+SCORE_CACHE_TTL_HOURS = 168  # 7 days - fundamentals are quarterly
 SCORE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
