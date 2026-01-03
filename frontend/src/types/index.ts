@@ -10,6 +10,11 @@ export interface CompanyProfile {
   country: string
   is_etf: boolean
   is_actively_trading: boolean
+  ceo?: string
+  employees?: number
+  ipo_date?: string
+  website?: string
+  image?: string
 }
 
 export interface Quote {

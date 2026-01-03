@@ -558,57 +558,173 @@ export default function ValuePicks() {
 
       {/* Quality vs Valuation Scatter Chart */}
       {scores.length > 0 && (
-        <Card className="bg-card/50 backdrop-blur border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Quality vs Valuation Matrix
-              <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">
+        <Card className="bg-card border-border/50 overflow-hidden">
+          <CardHeader className="border-b border-border/50 bg-accent/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <Target className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Quality vs Valuation Matrix</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-0.5">Click any point to view company details</p>
+                </div>
+              </div>
+              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 px-3 py-1">
                 Sweet Spot: Top Right
               </Badge>
-            </CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="h-[400px]">
+          <CardContent className="p-0">
+            <div className="h-[480px] relative">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <ScatterChart margin={{ top: 40, right: 40, bottom: 60, left: 80 }}>
+                  <defs>
+                    {/* Gradient backgrounds for quadrants */}
+                    <linearGradient id="greenZone" x1="0" y1="1" x2="0" y2="0">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity="0.03" />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity="0.08" />
+                    </linearGradient>
+                    <linearGradient id="blueZone" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.02" />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
+                    </linearGradient>
+                    <linearGradient id="amberZone" x1="0" y1="1" x2="0" y2="0">
+                      <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.02" />
+                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.05" />
+                    </linearGradient>
+                    <linearGradient id="redZone" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.02" />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0.04" />
+                    </linearGradient>
+                    {/* Glow filter for dots */}
+                    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Quadrant backgrounds */}
+                  <rect x="60%" y="0" width="40%" height="40%" fill="url(#greenZone)" />
+                  <rect x="0" y="0" width="60%" height="40%" fill="url(#amberZone)" />
+                  <rect x="60%" y="40%" width="40%" height="60%" fill="url(#blueZone)" />
+                  <rect x="0" y="40%" width="60%" height="60%" fill="url(#redZone)" />
+
+                  <CartesianGrid
+                    strokeDasharray="1 4"
+                    stroke="#334155"
+                    strokeOpacity={0.5}
+                    vertical={true}
+                    horizontal={true}
+                  />
+
                   <XAxis
                     type="number"
                     dataKey="quality"
                     name="Quality Score"
                     domain={[0, 100]}
-                    label={{ value: 'Quality Score →', position: 'bottom', offset: 40, fill: '#94a3b8' }}
-                    tick={{ fill: '#94a3b8' }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#475569', strokeWidth: 1 }}
+                    tick={{ fill: '#71717a', fontSize: 11 }}
+                    ticks={[0, 20, 40, 60, 80, 100]}
+                    label={{
+                      value: 'Quality Score →',
+                      position: 'bottom',
+                      offset: 10,
+                      fill: '#94a3b8',
+                      fontSize: 12,
+                      fontWeight: 500,
+                    }}
                   />
                   <YAxis
                     type="number"
                     dataKey="valuation"
                     name="Valuation Score"
                     domain={[0, 100]}
-                    label={{ value: '← Valuation Score (Higher = Cheaper)', angle: -90, position: 'left', offset: 40, fill: '#94a3b8' }}
-                    tick={{ fill: '#94a3b8' }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#475569', strokeWidth: 1 }}
+                    tick={{ fill: '#71717a', fontSize: 11 }}
+                    ticks={[0, 20, 40, 60, 80, 100]}
+                    width={50}
+                    label={{
+                      value: 'Valuation Score (Higher = Cheaper)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      offset: 10,
+                      fill: '#94a3b8',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      style: { textAnchor: 'middle' },
+                    }}
                   />
-                  <ReferenceLine x={60} stroke="#475569" strokeDasharray="5 5" />
-                  <ReferenceLine y={60} stroke="#475569" strokeDasharray="5 5" />
+
+                  {/* Threshold lines */}
+                  <ReferenceLine
+                    x={60}
+                    stroke="#525252"
+                    strokeWidth={1}
+                    strokeDasharray="6 4"
+                  />
+                  <ReferenceLine
+                    y={60}
+                    stroke="#525252"
+                    strokeWidth={1}
+                    strokeDasharray="6 4"
+                  />
+
                   <Tooltip
                     content={({ payload }) => {
                       if (!payload?.[0]) return null
                       const data = payload[0].payload
+                      const isValuePick = data.quality >= 60 && data.valuation >= 60
                       return (
-                        <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-lg">
-                          <p className="font-bold text-white">{data.ticker}</p>
-                          <p className="text-sm text-slate-300">{data.name}</p>
-                          <div className="mt-2 space-y-1 text-sm">
-                            <p>Quality: <span className="text-blue-400">{data.quality.toFixed(0)}</span></p>
-                            <p>Valuation: <span className="text-emerald-400">{data.valuation.toFixed(0)}</span></p>
-                            <p>Value Score: <span className="text-amber-400">{data.value_score?.toFixed(0) || '—'}</span></p>
-                            {data.pe_ratio && <p>P/E: {data.pe_ratio.toFixed(1)}</p>}
-                            {data.fcf_yield && <p>FCF Yield: {(data.fcf_yield * 100).toFixed(1)}%</p>}
+                        <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 shadow-2xl min-w-[200px]">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-bold text-lg text-white">{data.ticker}</span>
+                            {isValuePick && (
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                VALUE PICK
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-400 mb-3 line-clamp-1">{data.name}</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-0.5">
+                              <p className="text-[10px] uppercase tracking-wider text-slate-500">Quality</p>
+                              <p className="text-xl font-bold text-blue-400">{data.quality.toFixed(0)}</p>
+                            </div>
+                            <div className="space-y-0.5">
+                              <p className="text-[10px] uppercase tracking-wider text-slate-500">Valuation</p>
+                              <p className="text-xl font-bold text-emerald-400">{data.valuation.toFixed(0)}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-1.5">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-slate-500">Value Score</span>
+                              <span className="font-semibold text-amber-400">{data.value_score?.toFixed(0) || '—'}</span>
+                            </div>
+                            {data.pe_ratio && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-slate-500">P/E Ratio</span>
+                                <span className="font-medium">{data.pe_ratio.toFixed(1)}</span>
+                              </div>
+                            )}
+                            {data.fcf_yield && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-slate-500">FCF Yield</span>
+                                <span className="font-medium text-teal-400">{(data.fcf_yield * 100).toFixed(1)}%</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )
                     }}
+                    cursor={{ strokeDasharray: '3 3', stroke: '#6366f1' }}
                   />
+
                   <Scatter
                     data={scatterData}
                     cursor="pointer"
@@ -618,29 +734,52 @@ export default function ValuePicks() {
                       <Cell
                         key={`cell-${index}`}
                         fill={getValueColor(entry.quality, entry.valuation)}
-                        fillOpacity={0.8}
+                        fillOpacity={0.9}
+                        stroke={getValueColor(entry.quality, entry.valuation)}
+                        strokeWidth={2}
+                        strokeOpacity={0.3}
+                        r={7}
+                        filter="url(#glow)"
                       />
                     ))}
                   </Scatter>
                 </ScatterChart>
               </ResponsiveContainer>
+
+              {/* Quadrant labels */}
+              <div className="absolute top-12 right-12 text-[10px] font-semibold text-emerald-400/60 uppercase tracking-widest pointer-events-none">
+                Value Picks
+              </div>
+              <div className="absolute top-12 left-24 text-[10px] font-semibold text-amber-400/60 uppercase tracking-widest pointer-events-none">
+                Value Traps
+              </div>
+              <div className="absolute bottom-24 right-12 text-[10px] font-semibold text-blue-400/60 uppercase tracking-widest pointer-events-none">
+                Quality Premium
+              </div>
+              <div className="absolute bottom-24 left-24 text-[10px] font-semibold text-red-400/60 uppercase tracking-widest pointer-events-none">
+                Avoid
+              </div>
             </div>
-            <div className="flex justify-center gap-6 mt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-muted-foreground">Value Pick (Q≥60, V≥60)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <span className="text-muted-foreground">Quality but Expensive</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="text-muted-foreground">Value Trap Risk</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-muted-foreground">Avoid</span>
+
+            {/* Legend */}
+            <div className="px-6 py-4 border-t border-border/50 bg-accent/10">
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30" />
+                  <span className="text-sm text-muted-foreground">Value Pick <span className="text-slate-500">(Q≥60, V≥60)</span></span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3.5 h-3.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30" />
+                  <span className="text-sm text-muted-foreground">Quality but Expensive</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/30" />
+                  <span className="text-sm text-muted-foreground">Value Trap Risk</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3.5 h-3.5 rounded-full bg-red-500 shadow-lg shadow-red-500/30" />
+                  <span className="text-sm text-muted-foreground">Avoid</span>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 import { PriceChart } from '@/components/charts/PriceChart'
 import { FinancialChart } from '@/components/charts/FinancialChart'
+import { ScoreRadar } from '@/components/charts/ScoreRadar'
 import {
   useCompanyProfile,
   useCompanyScore,
@@ -26,7 +27,7 @@ import {
   getScoreColor,
   getChangeColor,
 } from '@/lib/utils'
-import { Search, TrendingUp, TrendingDown, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, TrendingUp, TrendingDown, ExternalLink, ChevronDown, ChevronUp, Building2, DollarSign, BarChart3, Percent, Calendar } from 'lucide-react'
 
 const quickPicks = ['MSFT', 'AAPL', 'V', 'COST', 'HUBS', 'CRWD']
 const periods = ['1M', '1Y', '2Y', '5Y'] as const
@@ -253,28 +254,105 @@ export default function Company() {
             </div>
           )}
 
-          {/* Score Breakdown */}
+          {/* Score Breakdown with Radar */}
           {score && (
-            <div className="grid gap-4 md:grid-cols-4">
-              {[
-                { label: 'Quality', value: score.quality_score },
-                { label: 'Growth', value: score.growth_score },
-                { label: 'Strength', value: score.strength_score },
-                { label: 'Valuation', value: score.valuation_score },
-              ].map(({ label, value }) => (
-                <Card key={label}>
-                  <CardContent className="pt-4 pb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium">{label}</p>
-                      <p className={cn('text-lg font-bold', getScoreColor(value))}>
-                        {value.toFixed(0)}
-                      </p>
-                    </div>
-                    <Progress value={value} className="h-2" />
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Radar Chart */}
+              <Card className="lg:col-span-1">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Score Profile</CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                  <ScoreRadar
+                    quality={score.quality_score}
+                    growth={score.growth_score}
+                    strength={score.strength_score}
+                    valuation={score.valuation_score}
+                    size={220}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Score Cards */}
+              <Card className="lg:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center justify-between">
+                    Score Breakdown
+                    <span className="text-xs font-normal text-muted-foreground">
+                      (Percentile vs universe)
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      { label: 'Quality', value: score.quality_score, desc: 'ROIC, margins, profitability' },
+                      { label: 'Growth', value: score.growth_score, desc: 'Revenue & earnings growth' },
+                      { label: 'Strength', value: score.strength_score, desc: 'Balance sheet health' },
+                      { label: 'Valuation', value: score.valuation_score, desc: 'P/E, FCF yield, PEG' },
+                    ].map(({ label, value, desc }) => (
+                      <div key={label} className="p-4 rounded-lg bg-card/50 border">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium">{label}</p>
+                          <p className={cn('text-2xl font-bold', getScoreColor(value))}>
+                            {value.toFixed(0)}
+                          </p>
+                        </div>
+                        <Progress value={value} className="h-2 mb-2" />
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+          )}
+
+          {/* Company Description */}
+          {profile?.description && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  About {profile.company_name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {profile.description}
+                </p>
+                <div className="flex flex-wrap gap-4 mt-4 text-sm">
+                  {profile.ceo && (
+                    <div>
+                      <span className="text-muted-foreground">CEO: </span>
+                      <span className="font-medium">{profile.ceo}</span>
+                    </div>
+                  )}
+                  {profile.employees && (
+                    <div>
+                      <span className="text-muted-foreground">Employees: </span>
+                      <span className="font-medium">{profile.employees.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {profile.ipo_date && (
+                    <div>
+                      <span className="text-muted-foreground">IPO: </span>
+                      <span className="font-medium">{profile.ipo_date}</span>
+                    </div>
+                  )}
+                  {profile.website && (
+                    <a
+                      href={profile.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline flex items-center gap-1"
+                    >
+                      Website <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Tabs */}
