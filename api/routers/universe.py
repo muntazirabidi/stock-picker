@@ -16,6 +16,29 @@ SCORE_CACHE_DIR = Path("data/score_cache")
 SCORE_CACHE_TTL_HOURS = 168  # 7 days - fundamentals are quarterly
 SCORE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+# Progress tracking
+scoring_progress = {
+    "is_running": False,
+    "current": 0,
+    "total": 0,
+    "current_ticker": "",
+    "processed": 0,
+    "failed": 0,
+    "started_at": None,
+}
+
+
+@router.get("/progress")
+async def get_scoring_progress():
+    """Get current scoring progress."""
+    elapsed = None
+    if scoring_progress["started_at"] and scoring_progress["is_running"]:
+        elapsed = int(time.time() - scoring_progress["started_at"])
+    return {
+        **scoring_progress,
+        "elapsed_seconds": elapsed,
+    }
+
 
 def get_score_cache_key(tickers: list[str]) -> str:
     """Generate cache key from sorted ticker list."""
@@ -166,6 +189,15 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
         logger.info(f"Returning {len(cached_scores)} cached valuation scores")
         return [CompanyScoreWithValuation(**s) for s in cached_scores]
 
+    # Initialize progress tracking
+    scoring_progress["is_running"] = True
+    scoring_progress["current"] = 0
+    scoring_progress["total"] = len(request.tickers)
+    scoring_progress["current_ticker"] = ""
+    scoring_progress["processed"] = 0
+    scoring_progress["failed"] = 0
+    scoring_progress["started_at"] = time.time()
+
     try:
         from src.data.yahoo_client import YahooClient
         from src.metrics.calculator import MetricsCalculator
@@ -179,7 +211,11 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
         all_metrics = []
         metrics_map = {}  # ticker -> raw metrics for valuation data
 
-        for ticker in request.tickers:
+        for i, ticker in enumerate(request.tickers):
+            # Update progress
+            scoring_progress["current"] = i + 1
+            scoring_progress["current_ticker"] = ticker
+
             try:
                 logger.info(f"Fetching financials for {ticker}")
                 financials = client.get_company_financials(ticker)
@@ -188,8 +224,14 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
                     if metrics:
                         all_metrics.append(metrics)
                         metrics_map[ticker] = metrics
+                        scoring_progress["processed"] += 1
                         logger.info(f"Successfully processed {ticker}")
+                    else:
+                        scoring_progress["failed"] += 1
+                else:
+                    scoring_progress["failed"] += 1
             except Exception as e:
+                scoring_progress["failed"] += 1
                 logger.warning(f"Failed to process {ticker}: {e}")
                 continue
 
@@ -245,8 +287,15 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
             save_scores_to_cache(cache_key, [s.model_dump() for s in result])
             logger.info(f"Cached {len(result)} valuation scores")
 
+        # Reset progress
+        scoring_progress["is_running"] = False
+        scoring_progress["current_ticker"] = ""
+
         return result
 
     except Exception as e:
+        # Reset progress on error
+        scoring_progress["is_running"] = False
+        scoring_progress["current_ticker"] = ""
         logger.error(f"Score universe with valuation error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

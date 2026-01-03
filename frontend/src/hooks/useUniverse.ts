@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUniverseTickers, scoreUniverse, scoreUniverseWithValuation } from '@/api/client'
+import { getUniverseTickers, scoreUniverse, scoreUniverseWithValuation, getScoringProgress } from '@/api/client'
 import type { UniverseType, CompanyScore, CompanyScoreWithValuation } from '@/types'
 
 export function useUniverseTickers(type: UniverseType) {
@@ -46,4 +46,13 @@ export function useValueScores() {
     data: queryClient.getQueryData<CompanyScoreWithValuation[]>(['universe', 'value-scores']) || [],
     setData: (data: CompanyScoreWithValuation[]) => queryClient.setQueryData(['universe', 'value-scores'], data),
   }
+}
+
+export function useScoringProgress(enabled: boolean) {
+  return useQuery({
+    queryKey: ['universe', 'progress'],
+    queryFn: getScoringProgress,
+    refetchInterval: enabled ? 2000 : false, // Poll every 2 seconds while enabled
+    enabled,
+  })
 }

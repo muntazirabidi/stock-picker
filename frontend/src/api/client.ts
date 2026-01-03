@@ -126,3 +126,19 @@ export async function getCacheStats(): Promise<CacheStats> {
 export async function clearCache(): Promise<void> {
   await fetchApi<void>('/system/clear-cache', { method: 'POST' })
 }
+
+// Progress tracking
+export interface ScoringProgress {
+  is_running: boolean
+  current: number
+  total: number
+  current_ticker: string
+  processed: number
+  failed: number
+  started_at: number | null
+  elapsed_seconds: number | null
+}
+
+export async function getScoringProgress(): Promise<ScoringProgress> {
+  return fetchApi<ScoringProgress>('/universe/progress')
+}
