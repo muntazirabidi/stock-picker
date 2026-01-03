@@ -755,59 +755,136 @@ export default function Learning() {
             </CardContent>
           </Card>
 
+          {/* Top Picks Smart Filter Criteria */}
+          <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Gem className="h-5 w-5 text-emerald-400" />
+                "Top Picks" Smart Filter Criteria
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                These are the criteria used by the "Top Picks" button in Value Picks. Each filter has a specific purpose:
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border/50">
+                      <th className="text-left py-2 px-3">Filter</th>
+                      <th className="text-left py-2 px-3">Value</th>
+                      <th className="text-left py-2 px-3">Why This Matters</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border/30">
+                      <td className="py-3 px-3 font-medium text-emerald-400">Value Score</td>
+                      <td className="py-3 px-3">≥ 80</td>
+                      <td className="py-3 px-3 text-muted-foreground">
+                        Combines quality + valuation. Top 20% means excellent fundamentals AND attractive price.
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/30">
+                      <td className="py-3 px-3 font-medium text-blue-400">Quality Score</td>
+                      <td className="py-3 px-3">≥ 60</td>
+                      <td className="py-3 px-3 text-muted-foreground">
+                        Above average business quality. Strong ROIC, margins, FCF generation. Avoids struggling companies.
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/30">
+                      <td className="py-3 px-3 font-medium text-purple-400">P/E Ratio</td>
+                      <td className="py-3 px-3">≤ 25</td>
+                      <td className="py-3 px-3 text-muted-foreground">
+                        Not overpaying for earnings. Market average is ~20. Excludes speculative high P/E stocks.
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/30">
+                      <td className="py-3 px-3 font-medium text-amber-400">PEG Ratio</td>
+                      <td className="py-3 px-3">≤ 1.5</td>
+                      <td className="py-3 px-3 text-muted-foreground">
+                        P/E adjusted for growth. PEG &lt;1 = growth underpriced. Ensures you're not overpaying for growth rate.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-medium text-teal-400">FCF Yield</td>
+                      <td className="py-3 px-3">≥ 5%</td>
+                      <td className="py-3 px-3 text-muted-foreground">
+                        Real cash return on investment. 5% means company generates 5¢ cash per $1 you invest. Higher = cheaper.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* PEG Warning */}
+          <Card className="bg-amber-500/5 border-amber-500/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-400" />
+                PEG Ratio: A Common Trap
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              <p>
+                <strong className="text-amber-400">Low PEG doesn't always mean cheap!</strong> Here's why:
+              </p>
+              <div className="bg-slate-800/50 rounded-lg p-3 font-mono text-xs">
+                PEG = P/E ÷ Earnings Growth Rate<br /><br />
+                Example: Stock with P/E = 70 and Growth = 200%<br />
+                PEG = 70 ÷ 200 = 0.35 (looks cheap!)<br /><br />
+                But you're still paying 70x earnings!
+              </div>
+              <p className="text-muted-foreground">
+                Always check <strong>Valuation Score</strong> alongside PEG. If PEG is low but Valuation Score is below 50,
+                the stock is expensive on traditional metrics but growing fast. High risk if growth slows.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Screening Criteria */}
           <Card className="bg-card/50 backdrop-blur border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                Recommended Screening Criteria
+                Red Flags to Avoid
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-emerald-400 mb-2">For Value Picks:</h4>
-                  <ul className="space-y-1 text-sm">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-400" />
-                      Quality Score ≥ 60
+                  <h4 className="font-semibold text-red-400 mb-2">Warning Signs:</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                      <div>
+                        <strong>Value Trap:</strong> Low Quality (&lt;40) + High Valuation (&gt;70) = Cheap for a reason
+                      </div>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-400" />
-                      Valuation Score ≥ 60
+                    <li className="flex items-start gap-2">
+                      <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                      <div>
+                        <strong>PEG Mirage:</strong> Low PEG + Low Valuation Score = Expensive but growing fast
+                      </div>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-400" />
-                      P/E Ratio &lt; 25 (or profitable)
+                    <li className="flex items-start gap-2">
+                      <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                      <div>
+                        <strong>Declining Industries:</strong> Even great numbers in tobacco, coal = structural decline
+                      </div>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-400" />
-                      FCF Yield &gt; 4%
+                    <li className="flex items-start gap-2">
+                      <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                      <div>
+                        <strong>Sector Concentration:</strong> Many "top picks" may be from same sector (e.g., insurance)
+                      </div>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-400" />
-                      Stage: Compounder or Mature
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-amber-400 mb-2">Red Flags to Avoid:</h4>
-                  <ul className="space-y-1 text-sm">
-                    <li className="flex items-center gap-2">
-                      <XCircle className="h-4 w-4 text-red-400" />
-                      Low Quality (&lt;40) + High Valuation (&gt;70) = Value Trap
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <XCircle className="h-4 w-4 text-red-400" />
-                      Debt/Equity &gt; 1.5 (too leveraged)
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <XCircle className="h-4 w-4 text-red-400" />
-                      Declining revenue for 2+ years
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <XCircle className="h-4 w-4 text-red-400" />
-                      Negative FCF for established companies
+                    <li className="flex items-start gap-2">
+                      <XCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                      <div>
+                        <strong>Missing Data:</strong> If PEG or other metrics show "—", verify manually before investing
+                      </div>
                     </li>
                   </ul>
                 </div>

@@ -159,6 +159,13 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
     import logging
     logger = logging.getLogger(__name__)
 
+    # Check score cache first (different key for valuation scores)
+    cache_key = get_score_cache_key(request.tickers) + "_valuation"
+    cached_scores = get_cached_scores(cache_key)
+    if cached_scores:
+        logger.info(f"Returning {len(cached_scores)} cached valuation scores")
+        return [CompanyScoreWithValuation(**s) for s in cached_scores]
+
     try:
         from src.data.yahoo_client import YahooClient
         from src.metrics.calculator import MetricsCalculator
@@ -232,6 +239,12 @@ async def score_universe_with_valuation(request: ScoreRequest) -> list[CompanySc
 
         # Sort by value_score descending (best value picks first)
         result.sort(key=lambda x: x.value_score or 0, reverse=True)
+
+        # Cache the valuation scores
+        if result:
+            save_scores_to_cache(cache_key, [s.model_dump() for s in result])
+            logger.info(f"Cached {len(result)} valuation scores")
+
         return result
 
     except Exception as e:

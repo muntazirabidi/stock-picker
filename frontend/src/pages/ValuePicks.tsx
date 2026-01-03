@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useUniverseTickers, useScoreUniverseWithValuation, useValueScores } from '@/hooks/useUniverse'
 import { cn, getStageColor, getScoreColor } from '@/lib/utils'
 import type { UniverseType, CompanyScoreWithValuation } from '@/types'
-import { RefreshCw, Search, TrendingUp, Target, DollarSign, Gem, Info } from 'lucide-react'
+import { RefreshCw, Search, TrendingUp, Target, DollarSign, Gem, Info, ChevronUp, ChevronDown } from 'lucide-react'
 import {
   ScatterChart,
   Scatter,
@@ -41,9 +41,11 @@ const universeOptions = [
 const sortOptions = [
   { value: 'value_score', label: 'Value Score' },
   { value: 'quality_score', label: 'Quality' },
+  { value: 'growth_score', label: 'Growth' },
   { value: 'valuation_score', label: 'Valuation' },
   { value: 'fcf_yield', label: 'FCF Yield' },
   { value: 'pe_ratio', label: 'P/E Ratio' },
+  { value: 'peg_ratio', label: 'PEG Ratio' },
 ]
 
 function formatMetric(value: number | null, suffix = '', decimals = 1): string {
@@ -54,6 +56,16 @@ function formatMetric(value: number | null, suffix = '', decimals = 1): string {
 function formatPercent(value: number | null): string {
   if (value === null || value === undefined) return '—'
   return `${(value * 100).toFixed(1)}%`
+}
+
+type SortKey = 'ticker' | 'name' | 'stage' | 'value_score' | 'quality_score' | 'growth_score' | 'valuation_score' | 'pe_ratio' | 'peg_ratio' | 'fcf_yield' | 'ev_ebitda'
+type SortDirection = 'asc' | 'desc'
+
+function SortIcon({ column, sortBy, sortDirection }: { column: SortKey; sortBy: SortKey; sortDirection: SortDirection }) {
+  if (sortBy !== column) return <ChevronUp className="h-4 w-4 opacity-20" />
+  return sortDirection === 'asc'
+    ? <ChevronUp className="h-4 w-4 text-primary" />
+    : <ChevronDown className="h-4 w-4 text-primary" />
 }
 
 function getValueColor(qualityScore: number, valuationScore: number): string {
@@ -70,20 +82,36 @@ function getValueColor(qualityScore: number, valuationScore: number): string {
 export default function ValuePicks() {
   const navigate = useNavigate()
   const [universeType, setUniverseType] = useState<UniverseType>('sp500')
-  const [sortBy, setSortBy] = useState('value_score')
-  const [scoreCount, setScoreCount] = useState(50)
+  const [sortBy, setSortBy] = useState<SortKey>('value_score')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [scoreCount, setScoreCount] = useState(500)
   const [searchTerm, setSearchTerm] = useState('')
 
   // Use global cache for scores (persists across navigation)
   const { data: scores, setData: setScores } = useValueScores()
 
   // Valuation filters
-  const [maxPE, setMaxPE] = useState<number | ''>('')
-  const [minFCFYield, setMinFCFYield] = useState<number | ''>('')
-  const [minQuality, setMinQuality] = useState(50)
+  const [minValueScore, setMinValueScore] = useState<number | ''>(80)
+  const [maxPE, setMaxPE] = useState<number | ''>(25)
+  const [maxPEG, setMaxPEG] = useState<number | ''>(1.5)
+  const [minFCFYield, setMinFCFYield] = useState<number | ''>(5)
+  const [minQuality, setMinQuality] = useState(60)
+  const [minGrowthScore, setMinGrowthScore] = useState<number | ''>('')
+  const [stageFilter, setStageFilter] = useState<string>('all')
 
   const { data: tickers, isLoading: isLoadingTickers } = useUniverseTickers(universeType)
   const scoreMutation = useScoreUniverseWithValuation()
+
+  const handleSort = (key: SortKey) => {
+    if (sortBy === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(key)
+      // Default to desc for scores/metrics (higher is better), asc for P/E and PEG (lower is better)
+      const defaultDesc = ['value_score', 'quality_score', 'growth_score', 'valuation_score', 'fcf_yield']
+      setSortDirection(defaultDesc.includes(key) ? 'desc' : 'asc')
+    }
+  }
 
   const handleScore = async () => {
     if (!tickers?.length) return
@@ -108,9 +136,19 @@ export default function ValuePicks() {
     // Filter by minimum quality
     result = result.filter((s) => s.quality_score >= minQuality)
 
+    // Filter by minimum value score
+    if (minValueScore !== '' && minValueScore > 0) {
+      result = result.filter((s) => (s.value_score || 0) >= minValueScore)
+    }
+
     // Filter by max P/E
     if (maxPE !== '' && maxPE > 0) {
       result = result.filter((s) => s.pe_ratio === null || s.pe_ratio <= maxPE)
+    }
+
+    // Filter by max PEG
+    if (maxPEG !== '' && maxPEG > 0) {
+      result = result.filter((s) => s.peg_ratio === null || s.peg_ratio <= maxPEG)
     }
 
     // Filter by min FCF Yield
@@ -118,29 +156,75 @@ export default function ValuePicks() {
       result = result.filter((s) => s.fcf_yield !== null && s.fcf_yield >= minFCFYield / 100)
     }
 
+    // Filter by min Growth Score
+    if (minGrowthScore !== '' && minGrowthScore > 0) {
+      result = result.filter((s) => s.growth_score >= minGrowthScore)
+    }
+
+    // Filter by stage
+    if (stageFilter !== 'all') {
+      result = result.filter((s) => s.stage === stageFilter)
+    }
+
     // Sort
     result.sort((a, b) => {
+      let comparison = 0
+
       switch (sortBy) {
+        case 'ticker':
+          comparison = a.ticker.localeCompare(b.ticker)
+          break
+        case 'name':
+          comparison = a.name.localeCompare(b.name)
+          break
+        case 'stage':
+          comparison = a.stage.localeCompare(b.stage)
+          break
         case 'value_score':
-          return (b.value_score || 0) - (a.value_score || 0)
+          comparison = (a.value_score || 0) - (b.value_score || 0)
+          break
         case 'quality_score':
-          return b.quality_score - a.quality_score
+          comparison = a.quality_score - b.quality_score
+          break
+        case 'growth_score':
+          comparison = a.growth_score - b.growth_score
+          break
         case 'valuation_score':
-          return b.valuation_score - a.valuation_score
-        case 'fcf_yield':
-          return (b.fcf_yield || 0) - (a.fcf_yield || 0)
+          comparison = a.valuation_score - b.valuation_score
+          break
         case 'pe_ratio':
-          // Lower P/E is better, handle nulls
-          if (a.pe_ratio === null) return 1
-          if (b.pe_ratio === null) return -1
-          return a.pe_ratio - b.pe_ratio
+          // Handle nulls - push to end
+          if (a.pe_ratio === null && b.pe_ratio === null) comparison = 0
+          else if (a.pe_ratio === null) comparison = 1
+          else if (b.pe_ratio === null) comparison = -1
+          else comparison = a.pe_ratio - b.pe_ratio
+          break
+        case 'peg_ratio':
+          // Handle nulls - push to end
+          if (a.peg_ratio === null && b.peg_ratio === null) comparison = 0
+          else if (a.peg_ratio === null) comparison = 1
+          else if (b.peg_ratio === null) comparison = -1
+          else comparison = a.peg_ratio - b.peg_ratio
+          break
+        case 'fcf_yield':
+          comparison = (a.fcf_yield || 0) - (b.fcf_yield || 0)
+          break
+        case 'ev_ebitda':
+          // Handle nulls - push to end
+          if (a.ev_ebitda === null && b.ev_ebitda === null) comparison = 0
+          else if (a.ev_ebitda === null) comparison = 1
+          else if (b.ev_ebitda === null) comparison = -1
+          else comparison = a.ev_ebitda - b.ev_ebitda
+          break
         default:
-          return 0
+          comparison = 0
       }
+
+      return sortDirection === 'asc' ? comparison : -comparison
     })
 
     return result
-  }, [scores, sortBy, searchTerm, minQuality, maxPE, minFCFYield])
+  }, [scores, sortBy, sortDirection, searchTerm, minQuality, minValueScore, maxPE, maxPEG, minFCFYield, minGrowthScore, stageFilter])
 
   // Scatter chart data
   const scatterData = useMemo(() => {
@@ -215,6 +299,19 @@ export default function ValuePicks() {
             </div>
 
             <div className="space-y-2">
+              <label className="text-sm font-medium text-emerald-400">Min Value Score</label>
+              <Input
+                type="number"
+                value={minValueScore}
+                onChange={(e) => setMinValueScore(e.target.value ? Number(e.target.value) : '')}
+                placeholder="Any"
+                min={0}
+                max={100}
+                className="w-20"
+              />
+            </div>
+
+            <div className="space-y-2">
               <label className="text-sm font-medium">Min Quality</label>
               <Input
                 type="number"
@@ -238,6 +335,18 @@ export default function ValuePicks() {
             </div>
 
             <div className="space-y-2">
+              <label className="text-sm font-medium text-emerald-400">Max PEG</label>
+              <Input
+                type="number"
+                value={maxPEG}
+                onChange={(e) => setMaxPEG(e.target.value ? Number(e.target.value) : '')}
+                placeholder="Any"
+                step="0.1"
+                className="w-20"
+              />
+            </div>
+
+            <div className="space-y-2">
               <label className="text-sm font-medium">Min FCF Yield %</label>
               <Input
                 type="number"
@@ -245,6 +354,34 @@ export default function ValuePicks() {
                 onChange={(e) => setMinFCFYield(e.target.value ? Number(e.target.value) : '')}
                 placeholder="Any"
                 className="w-20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-blue-400">Min Growth Score</label>
+              <Input
+                type="number"
+                value={minGrowthScore}
+                onChange={(e) => setMinGrowthScore(e.target.value ? Number(e.target.value) : '')}
+                placeholder="Any"
+                min={0}
+                max={100}
+                className="w-20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-blue-400">Stage</label>
+              <Select
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value)}
+                options={[
+                  { value: 'all', label: 'All Stages' },
+                  { value: 'compounder', label: 'Compounder' },
+                  { value: 'mature', label: 'Mature' },
+                  { value: 'growth', label: 'Growth' },
+                ]}
+                className="w-32"
               />
             </div>
 
@@ -281,13 +418,89 @@ export default function ValuePicks() {
             </Button>
           </div>
 
+          {/* Filter presets */}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="text-sm text-muted-foreground">Quick filters:</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setMinValueScore(80)
+                setMinQuality(60)
+                setMaxPE(25)
+                setMaxPEG(1.5)
+                setMinFCFYield(5)
+                setMinGrowthScore('')
+                setStageFilter('all')
+              }}
+              className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+            >
+              <Gem className="h-3 w-3 mr-1" />
+              Value Picks
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setMinValueScore('')
+                setMinQuality(80)
+                setMaxPE('')
+                setMaxPEG(2.0)
+                setMinFCFYield('')
+                setMinGrowthScore(70)
+                setStageFilter('compounder')
+              }}
+              className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+            >
+              <TrendingUp className="h-3 w-3 mr-1" />
+              Growth Picks
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setMinValueScore('')
+                setMinQuality(0)
+                setMaxPE('')
+                setMaxPEG('')
+                setMinFCFYield('')
+                setMinGrowthScore('')
+                setStageFilter('all')
+              }}
+              className="border-slate-500/50 hover:bg-slate-500/10"
+            >
+              Reset All
+            </Button>
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground space-y-1">
+            <p><span className="text-emerald-400">Value Picks:</span> Value≥80, Quality≥60, P/E≤25, PEG≤1.5, FCF≥5%</p>
+            <p><span className="text-blue-400">Growth Picks:</span> Quality≥80, Growth≥70, PEG≤2.0, Stage=Compounder</p>
+          </div>
+
           {/* Info banner */}
-          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground bg-emerald-500/10 rounded-lg px-4 py-2">
-            <Info className="h-4 w-4 text-emerald-400" />
-            <span>
-              <strong>Value Score</strong> = (Quality + Valuation) / 2.
-              Green zone = Quality ≥60 AND Valuation ≥60 (undervalued quality stocks).
-            </span>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-emerald-500/10 rounded-lg px-4 py-2">
+              <Info className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+              <span>
+                <strong>Value Score</strong> = (Quality + Valuation) / 2.
+                Green zone = Quality ≥60 AND Valuation ≥60 (undervalued quality stocks).
+              </span>
+            </div>
+            <details className="text-sm bg-slate-800/30 rounded-lg">
+              <summary className="px-4 py-2 cursor-pointer text-muted-foreground hover:text-foreground">
+                💡 Why these filter criteria? (click to expand)
+              </summary>
+              <div className="px-4 py-3 border-t border-border/30 space-y-2 text-muted-foreground">
+                <p><strong className="text-emerald-400">Value Score ≥80:</strong> Top 20% combining quality + cheapness. Filters out mediocre stocks.</p>
+                <p><strong className="text-blue-400">Quality ≥60:</strong> Above-average business fundamentals. Avoids struggling companies.</p>
+                <p><strong className="text-purple-400">P/E ≤25:</strong> Not overpaying for earnings. Market average ~20.</p>
+                <p><strong className="text-amber-400">PEG ≤1.5:</strong> Growth-adjusted P/E. Below 1.5 means growth isn't overpriced.</p>
+                <p><strong className="text-teal-400">FCF Yield ≥5%:</strong> Real cash return. 5% = company generates 5¢ cash per $1 invested.</p>
+                <p className="pt-2 text-amber-400/80">
+                  ⚠️ <strong>Warning:</strong> Low PEG + Low Valuation Score = expensive but growing fast. Always check both!
+                </p>
+              </div>
+            </details>
           </div>
         </CardContent>
       </Card>
@@ -456,16 +669,105 @@ export default function ValuePicks() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead>Ticker</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead>Value Score</TableHead>
-                    <TableHead>Quality</TableHead>
-                    <TableHead>Valuation</TableHead>
-                    <TableHead>P/E</TableHead>
-                    <TableHead>PEG</TableHead>
-                    <TableHead>FCF Yield</TableHead>
-                    <TableHead>EV/EBITDA</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('ticker')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Ticker
+                        <SortIcon column="ticker" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Name
+                        <SortIcon column="name" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('stage')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Stage
+                        <SortIcon column="stage" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('value_score')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Value Score
+                        <SortIcon column="value_score" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('quality_score')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Quality
+                        <SortIcon column="quality_score" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('growth_score')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Growth
+                        <SortIcon column="growth_score" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('valuation_score')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Valuation
+                        <SortIcon column="valuation_score" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('pe_ratio')}
+                    >
+                      <div className="flex items-center gap-1">
+                        P/E
+                        <SortIcon column="pe_ratio" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('peg_ratio')}
+                    >
+                      <div className="flex items-center gap-1">
+                        PEG
+                        <SortIcon column="peg_ratio" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('fcf_yield')}
+                    >
+                      <div className="flex items-center gap-1">
+                        FCF Yield
+                        <SortIcon column="fcf_yield" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => handleSort('ev_ebitda')}
+                    >
+                      <div className="flex items-center gap-1">
+                        EV/EBITDA
+                        <SortIcon column="ev_ebitda" sortBy={sortBy} sortDirection={sortDirection} />
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -511,6 +813,11 @@ export default function ValuePicks() {
                         <TableCell>
                           <span className={cn('font-medium', getScoreColor(score.quality_score))}>
                             {score.quality_score.toFixed(0)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={cn('font-medium', getScoreColor(score.growth_score))}>
+                            {score.growth_score.toFixed(0)}
                           </span>
                         </TableCell>
                         <TableCell>
