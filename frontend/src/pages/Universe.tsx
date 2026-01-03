@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useUniverseTickers, useScoreUniverse, useUniverseScores } from '@/hooks/useUniverse'
+import { useUniverseTickers, useScoreUniverse, useUniverseScores, useScoringProgress } from '@/hooks/useUniverse'
 import { cn, getStageColor, getScoreColor } from '@/lib/utils'
 import type { UniverseType } from '@/types'
 import { Download, RefreshCw, Search, Info, Zap, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
@@ -81,6 +81,7 @@ export default function Universe() {
 
   const { data: tickers, isLoading: isLoadingTickers } = useUniverseTickers(universeType)
   const scoreMutation = useScoreUniverse()
+  const { data: progress } = useScoringProgress(scoreMutation.isPending)
 
   const handleScore = async () => {
     if (!tickers?.length) return
@@ -270,10 +271,14 @@ export default function Universe() {
             <Button
               onClick={handleScore}
               disabled={isLoadingTickers || scoreMutation.isPending}
-              className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+              className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 min-w-[160px]"
             >
               <RefreshCw className={cn('h-4 w-4 mr-2', scoreMutation.isPending && 'animate-spin')} />
-              {scoreMutation.isPending ? `Scoring ${scoreCount}...` : `Score ${scoreCount} Stocks`}
+              {scoreMutation.isPending
+                ? progress?.is_running
+                  ? `${progress.current}/${progress.total}`
+                  : 'Starting...'
+                : `Score ${scoreCount} Stocks`}
             </Button>
           </div>
 
@@ -347,14 +352,58 @@ export default function Universe() {
         </CardHeader>
         <CardContent>
           {scoreMutation.isPending ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <Zap className="h-4 w-4 text-primary animate-pulse" />
-                <span>Fetching and scoring {scoreCount} stocks... This may take a few minutes on first run.</span>
+            <div className="space-y-4">
+              {/* Progress indicator */}
+              {progress?.is_running && (
+                <div className="rounded-lg border border-primary/20 bg-primary/[0.05] p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <RefreshCw className="h-5 w-5 text-primary animate-spin" />
+                      <div>
+                        <p className="text-[14px] font-medium text-white">Scoring in progress...</p>
+                        <p className="text-[12px] text-zinc-400">
+                          Currently processing: <span className="text-primary font-mono">{progress.current_ticker}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold font-mono text-primary">
+                        {progress.current}<span className="text-zinc-500">/{progress.total}</span>
+                      </p>
+                      <p className="text-[11px] text-zinc-500">
+                        {progress.processed} processed • {progress.failed} failed
+                      </p>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="w-full h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-blue-500 transition-all duration-300"
+                      style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-[11px] text-zinc-500">
+                    {progress.elapsed_seconds && `Elapsed: ${Math.floor(progress.elapsed_seconds / 60)}m ${progress.elapsed_seconds % 60}s`}
+                    {progress.current > 0 && progress.elapsed_seconds && (
+                      <span className="ml-2">
+                        • ETA: ~{Math.ceil(((progress.total - progress.current) * progress.elapsed_seconds) / progress.current / 60)}m remaining
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+              {!progress?.is_running && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                  <Zap className="h-4 w-4 text-primary animate-pulse" />
+                  <span>Preparing to score {scoreCount} stocks...</span>
+                </div>
+              )}
+              {/* Skeleton rows */}
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
               </div>
-              {[...Array(10)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
             </div>
           ) : scores.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
