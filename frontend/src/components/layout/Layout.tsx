@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { BarChart3, Building2, Briefcase, Home, TrendingUp, Gem, BookOpen, Activity } from 'lucide-react'
+import { BarChart3, Building2, Briefcase, Home, TrendingUp, Gem, BookOpen, Zap, Circle } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: Home },
@@ -19,30 +19,32 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation()
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full">
-        {/* Subtle gradient line at top */}
-        <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-
-        <div className="border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-16 max-w-screen-2xl items-center">
+        <div className="border-b border-white/[0.08] bg-[#0c0c0f]/95 backdrop-blur-2xl">
+          <div className="container flex h-14 max-w-screen-2xl items-center px-6">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 mr-10 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
-                <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/20">
-                  <TrendingUp className="h-5 w-5 text-white" strokeWidth={2.5} />
+            <Link to="/" className="flex items-center gap-2.5 mr-8 group">
+              <div className="relative flex items-center justify-center w-8 h-8">
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-indigo-500/30 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                {/* Icon container */}
+                <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600">
+                  <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-lg tracking-tight leading-none">Equity Research</span>
-                <span className="text-[10px] font-medium text-primary tracking-widest uppercase">Pro</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-semibold text-[15px] text-white tracking-tight">Equity Research</span>
+                <span className="text-[10px] font-semibold text-indigo-400 tracking-wide uppercase">Pro</span>
               </div>
             </Link>
 
+            {/* Divider */}
+            <div className="h-5 w-px bg-white/[0.08] mr-6" />
+
             {/* Navigation */}
-            <nav className="flex items-center gap-1">
+            <nav className="flex items-center gap-0.5">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path ||
                   (item.path !== '/' && location.pathname.startsWith(item.path))
@@ -53,38 +55,34 @@ export function Layout({ children }: LayoutProps) {
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      'relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                      'relative flex items-center gap-2 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150',
                       isActive
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
+                        ? 'text-white bg-white/[0.08]'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
                     )}
                   >
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className="absolute inset-0 bg-accent rounded-lg" />
-                    )}
                     <Icon className={cn(
-                      'relative h-4 w-4 transition-colors',
-                      isActive ? 'text-primary' : ''
+                      'h-3.5 w-3.5',
+                      isActive ? 'text-indigo-400' : ''
                     )} />
-                    <span className="relative">{item.label}</span>
+                    <span>{item.label}</span>
                   </Link>
                 )
               })}
             </nav>
 
             {/* Right side */}
-            <div className="ml-auto flex items-center gap-4">
-              {/* Status indicator */}
-              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-success/10 border border-success/20">
-                <div className="status-dot status-online" />
-                <span className="text-xs text-success font-medium">Live</span>
+            <div className="ml-auto flex items-center gap-3">
+              {/* Live status */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-emerald-500/20 bg-emerald-500/[0.08]">
+                <Circle className="h-2 w-2 fill-emerald-400 text-emerald-400" />
+                <span className="text-[11px] text-emerald-400 font-medium tracking-wide">Live</span>
               </div>
 
-              {/* Activity indicator */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                <Activity className="h-4 w-4" />
-                <span className="text-xs font-medium">API</span>
+              {/* API status */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/[0.08] bg-white/[0.02] text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04] transition-colors cursor-pointer">
+                <Zap className="h-3 w-3" />
+                <span className="text-[11px] font-medium tracking-wide">API</span>
               </div>
             </div>
           </div>
@@ -92,18 +90,18 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="container max-w-screen-2xl py-8">
+      <main className="container max-w-screen-2xl py-8 flex-1">
         <div className="animate-fade-in">
           {children}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 mt-auto">
-        <div className="container max-w-screen-2xl py-6">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <footer className="border-t border-white/[0.06]">
+        <div className="container max-w-screen-2xl py-4 px-6">
+          <div className="flex items-center justify-between text-[12px] text-zinc-600">
             <p>Built for sophisticated investors</p>
-            <p className="font-mono text-xs">v1.0.0</p>
+            <p className="font-mono">v1.0.0</p>
           </div>
         </div>
       </footer>

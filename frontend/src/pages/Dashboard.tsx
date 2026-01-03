@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCacheStats } from '@/hooks/useSystem'
 import {
   BarChart3,
@@ -15,7 +14,6 @@ import {
   Target,
   Zap,
   LineChart,
-  Shield,
 } from 'lucide-react'
 
 const navigationCards = [
@@ -24,27 +22,30 @@ const navigationCards = [
     description: 'Score and rank stocks across S&P 500, Nasdaq 100, and custom lists',
     icon: BarChart3,
     path: '/universe',
-    gradient: 'from-blue-500 to-cyan-400',
-    accent: 'blue',
+    illustration: '/illustrations/undraw_space-exploration_dhu1.svg',
     stats: '500+ stocks',
+    gradientBg: 'from-cyan-500/20 via-indigo-500/10 to-transparent',
+    glowColor: 'bg-cyan-500/30',
   },
   {
     title: 'Company Analysis',
     description: 'Deep fundamental analysis with quality, growth & valuation metrics',
     icon: Building2,
     path: '/company',
-    gradient: 'from-emerald-500 to-teal-400',
-    accent: 'emerald',
+    illustration: '/illustrations/undraw_all-the-data_ijgn.svg',
     stats: '50+ metrics',
+    gradientBg: 'from-emerald-500/20 via-teal-500/10 to-transparent',
+    glowColor: 'bg-emerald-500/30',
   },
   {
     title: 'Portfolio',
     description: 'Track holdings, monitor tier allocation, get deployment recommendations',
     icon: Briefcase,
     path: '/portfolio',
-    gradient: 'from-violet-500 to-purple-400',
-    accent: 'violet',
+    illustration: '/illustrations/undraw_stock-prices_8nuz.svg',
     stats: '3-tier system',
+    gradientBg: 'from-violet-500/20 via-purple-500/10 to-transparent',
+    glowColor: 'bg-violet-500/30',
   },
 ]
 
@@ -80,82 +81,107 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-2xl border border-border/50 bg-card">
+      <section className="relative overflow-hidden rounded-2xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0f0f14]">
         {/* Background effects */}
-        <div className="absolute inset-0 bg-grid opacity-50" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-violet-500/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.1),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,0.08),transparent_60%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[1px] bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
 
-        <div className="relative p-8 md:p-12">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-            <Zap className="h-3.5 w-3.5" />
-            Professional Stock Analysis
-          </div>
+        <div className="relative p-8 md:p-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
+            {/* Left content */}
+            <div className="flex-1 max-w-lg">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/[0.08] border border-indigo-500/20 text-indigo-400 text-[11px] font-medium mb-6 backdrop-blur-sm">
+                <Zap className="h-3 w-3" />
+                Professional Stock Analysis
+              </div>
 
-          {/* Heading */}
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Find Quality{' '}
-            <span className="gradient-text">Compounders</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed mb-8">
-            Before they become mega-caps. Systematic screening, scoring, and portfolio management for the sophisticated investor.
-          </p>
+              {/* Heading */}
+              <h1 className="text-3xl md:text-[40px] font-bold tracking-tight text-white mb-4 leading-[1.1]">
+                Find Quality{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400">Compounders</span>
+              </h1>
+              <p className="text-[15px] text-zinc-400 leading-relaxed mb-8">
+                Before they become mega-caps. Systematic screening, scoring, and portfolio management for the sophisticated investor.
+              </p>
 
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-3">
-            {features.map((feature) => {
-              const Icon = feature.icon
-              return (
-                <div
-                  key={feature.label}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-accent/50 border border-border/50 backdrop-blur-sm"
-                >
-                  <div className="p-1.5 rounded-lg bg-primary/10">
-                    <Icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium block leading-tight">{feature.label}</span>
-                    <span className="text-xs text-muted-foreground">{feature.description}</span>
-                  </div>
-                </div>
-              )
-            })}
+              {/* Feature pills */}
+              <div className="flex flex-wrap gap-2.5">
+                {features.map((feature) => {
+                  const Icon = feature.icon
+                  return (
+                    <div
+                      key={feature.label}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm hover:bg-white/[0.05] hover:border-white/[0.1] transition-colors"
+                    >
+                      <Icon className="h-3.5 w-3.5 text-indigo-400" />
+                      <span className="text-[12px] font-medium text-zinc-300">{feature.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Right illustration */}
+            <div className="hidden lg:flex flex-shrink-0 relative items-center justify-center">
+              <div className="absolute w-64 h-64 bg-indigo-500/15 blur-[80px] rounded-full" />
+              <div className="absolute w-48 h-48 bg-violet-500/10 blur-[60px] rounded-full translate-x-8 translate-y-4" />
+              <img
+                src="/illustrations/undraw_investing_uzcu.svg"
+                alt="Investing illustration"
+                className="relative w-[280px] h-auto drop-shadow-2xl"
+                style={{ filter: 'saturate(1.1) brightness(1.05)' }}
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Navigation Cards */}
+      {/* Navigation Cards with Illustrations */}
       <section>
-        <div className="flex items-center gap-2 mb-5">
-          <h2 className="text-lg font-semibold">Get Started</h2>
-          <div className="h-px flex-1 bg-border/50" />
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-[15px] font-semibold text-white">Get Started</h2>
+          <div className="h-px flex-1 bg-white/[0.06]" />
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           {navigationCards.map((card) => {
             const Icon = card.icon
             return (
               <Link key={card.path} to={card.path} className="group">
-                <Card className="h-full transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${card.gradient} shadow-lg`}>
-                        <Icon className="h-5 w-5 text-white" />
-                      </div>
-                      <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
+                <div className="relative h-full rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0a0a0d] overflow-hidden transition-all duration-300 hover:border-white/[0.08] hover:shadow-2xl hover:shadow-indigo-500/5">
+                  {/* Illustration area */}
+                  <div className="relative h-44 flex items-center justify-center overflow-hidden">
+                    {/* Gradient background */}
+                    <div className={`absolute inset-0 bg-gradient-to-b ${card.gradientBg}`} />
+                    {/* Glow effect */}
+                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 ${card.glowColor} blur-[60px] rounded-full opacity-40 group-hover:opacity-60 transition-opacity duration-500`} />
+                    {/* Bottom fade */}
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0a0a0d] to-transparent" />
+                    <img
+                      src={card.illustration}
+                      alt={card.title}
+                      className="relative h-36 w-auto object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 ease-out"
+                      style={{ filter: 'saturate(1.1) brightness(1.05)' }}
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative px-5 pb-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-[15px] font-semibold text-white">{card.title}</h3>
+                      <ArrowRight className="h-4 w-4 text-zinc-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300" />
                     </div>
-                    <CardTitle className="text-xl mb-1">{card.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">
+                    <p className="text-[12px] text-zinc-500 leading-relaxed mb-3">
                       {card.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-accent text-xs font-medium text-muted-foreground">
-                      {card.stats}
+                    </p>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+                      <Icon className="h-3 w-3 text-zinc-500" />
+                      <span className="text-[10px] font-medium text-zinc-500">{card.stats}</span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </Link>
             )
           })}
@@ -163,143 +189,95 @@ export default function Dashboard() {
       </section>
 
       {/* Two column layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {/* System Status */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-primary/10">
-                <Database className="h-5 w-5 text-primary" />
+        <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/10">
+              <Database className="h-4 w-4 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-[13px] font-semibold text-white">System Status</h3>
+              <p className="text-[11px] text-zinc-500">Data cache and API health</p>
+            </div>
+          </div>
+
+          {isCacheLoading ? (
+            <div className="grid gap-4 grid-cols-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-3 bg-white/[0.04] rounded w-16 animate-pulse" />
+                  <div className="h-7 bg-white/[0.04] rounded w-12 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : cacheStats ? (
+            <div className="grid gap-x-8 gap-y-5 grid-cols-2">
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Cached Items</p>
+                <p className="text-2xl font-semibold font-mono text-white">{cacheStats.valid_count}</p>
               </div>
               <div>
-                <CardTitle className="text-base">System Status</CardTitle>
-                <CardDescription>Data cache and API health</CardDescription>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Cache Size</p>
+                <p className="text-2xl font-semibold font-mono text-white">
+                  {cacheStats.total_size_mb.toFixed(1)}
+                  <span className="text-sm font-normal text-zinc-500 ml-1">MB</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Cache TTL</p>
+                <p className="text-2xl font-semibold font-mono text-white">
+                  {cacheStats.ttl_hours}
+                  <span className="text-sm font-normal text-zinc-500 ml-1">hrs</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Expired</p>
+                <p className="text-2xl font-semibold font-mono text-white">{cacheStats.expired_count}</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            {isCacheLoading ? (
-              <div className="grid gap-4 grid-cols-2">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-3 bg-accent rounded w-16 animate-pulse" />
-                    <div className="h-8 bg-accent rounded w-12 animate-pulse" />
-                  </div>
-                ))}
-              </div>
-            ) : cacheStats ? (
-              <div className="grid gap-6 grid-cols-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Database className="h-3.5 w-3.5" />
-                    Cached Items
-                  </div>
-                  <p className="text-2xl font-bold font-mono">{cacheStats.valid_count}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <HardDrive className="h-3.5 w-3.5" />
-                    Cache Size
-                  </div>
-                  <p className="text-2xl font-bold font-mono">
-                    {cacheStats.total_size_mb.toFixed(1)}
-                    <span className="text-sm font-normal text-muted-foreground ml-1">MB</span>
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    Cache TTL
-                  </div>
-                  <p className="text-2xl font-bold font-mono">
-                    {cacheStats.ttl_hours}
-                    <span className="text-sm font-normal text-muted-foreground ml-1">hrs</span>
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Expired
-                  </div>
-                  <p className="text-2xl font-bold font-mono">{cacheStats.expired_count}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-muted-foreground py-4">
-                <AlertCircle className="h-4 w-4" />
-                <span className="text-sm">Connect to API to view cache stats</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          ) : (
+            <div className="flex items-center gap-2 text-zinc-500 py-2">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-xs">Connect to API to view cache stats</span>
+            </div>
+          )}
+        </div>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-primary/10">
-                <LineChart className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-                <CardDescription>Jump to common tasks</CardDescription>
-              </div>
+        <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/10">
+              <Zap className="h-4 w-4 text-indigo-400" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {quickActions.map((action) => {
-                const Icon = action.icon
-                return (
-                  <Link
-                    key={action.path + action.label}
-                    to={action.path}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm ${
-                      action.primary
-                        ? 'bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20'
-                        : 'bg-accent hover:bg-accent/80 border border-border text-foreground'
-                    }`}
-                  >
-                    {Icon && <Icon className="h-4 w-4" />}
-                    {action.label}
-                  </Link>
-                )
-              })}
+            <div>
+              <h3 className="text-[13px] font-semibold text-white">Quick Actions</h3>
+              <p className="text-[11px] text-zinc-500">Jump to common tasks</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5">
+            {quickActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <Link
+                  key={action.path + action.label}
+                  to={action.path}
+                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-medium transition-all duration-150 ${
+                    action.primary
+                      ? 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/30'
+                      : 'bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/[0.1] text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
+                  {action.label}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* Bottom info cards */}
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-accent/30 border border-border/50">
-          <div className="p-2.5 rounded-lg bg-success/10">
-            <Shield className="h-5 w-5 text-success" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">Data Protected</p>
-            <p className="text-xs text-muted-foreground">Local caching enabled</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-accent/30 border border-border/50">
-          <div className="p-2.5 rounded-lg bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">Fast Analysis</p>
-            <p className="text-xs text-muted-foreground">Cached data loads instantly</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-accent/30 border border-border/50">
-          <div className="p-2.5 rounded-lg bg-violet-500/10">
-            <Target className="h-5 w-5 text-violet-400" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">Tier Allocation</p>
-            <p className="text-xs text-muted-foreground">Smart portfolio management</p>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

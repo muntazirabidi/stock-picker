@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -257,19 +256,23 @@ export default function ValuePicks() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <Gem className="h-8 w-8 text-emerald-400" />
-            Value Picks
-          </h1>
-          <p className="text-muted-foreground">Find undervalued stocks with strong fundamentals</p>
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0f0f14] p-6">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+        <div className="relative flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <Gem className="h-6 w-6 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Value Picks</h1>
+            <p className="text-sm text-zinc-400">Find undervalued stocks with strong fundamentals</p>
+          </div>
         </div>
       </div>
 
       {/* Controls */}
-      <Card className="bg-card/50 backdrop-blur border-border/50">
-        <CardContent className="pt-6">
+      <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] p-6">
           <div className="flex flex-wrap gap-4 items-end">
             <div className="space-y-2">
               <label className="text-sm font-medium">Universe</label>
@@ -419,8 +422,8 @@ export default function ValuePicks() {
           </div>
 
           {/* Filter presets */}
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-muted-foreground">Quick filters:</span>
+          <div className="mt-5 pt-5 border-t border-white/[0.04] flex flex-wrap items-center gap-3">
+            <span className="text-[12px] text-zinc-500 font-medium">Quick filters:</span>
             <Button
               variant="outline"
               size="sm"
@@ -433,9 +436,9 @@ export default function ValuePicks() {
                 setMinGrowthScore('')
                 setStageFilter('all')
               }}
-              className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+              className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-[12px]"
             >
-              <Gem className="h-3 w-3 mr-1" />
+              <Gem className="h-3 w-3 mr-1.5" />
               Value Picks
             </Button>
             <Button
@@ -450,9 +453,9 @@ export default function ValuePicks() {
                 setMinGrowthScore(70)
                 setStageFilter('compounder')
               }}
-              className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+              className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/50 text-[12px]"
             >
-              <TrendingUp className="h-3 w-3 mr-1" />
+              <TrendingUp className="h-3 w-3 mr-1.5" />
               Growth Picks
             </Button>
             <Button
@@ -467,115 +470,98 @@ export default function ValuePicks() {
                 setMinGrowthScore('')
                 setStageFilter('all')
               }}
-              className="border-slate-500/50 hover:bg-slate-500/10"
+              className="border-white/[0.06] text-zinc-400 hover:bg-white/[0.04] hover:border-white/[0.1] text-[12px]"
             >
               Reset All
             </Button>
           </div>
-          <div className="mt-2 text-xs text-muted-foreground space-y-1">
-            <p><span className="text-emerald-400">Value Picks:</span> Value≥80, Quality≥60, P/E≤25, PEG≤1.5, FCF≥5%</p>
-            <p><span className="text-blue-400">Growth Picks:</span> Quality≥80, Growth≥70, PEG≤2.0, Stage=Compounder</p>
+          <div className="mt-3 text-[11px] text-zinc-500 space-y-0.5">
+            <p><span className="text-emerald-400/80">Value Picks:</span> Value≥80, Quality≥60, P/E≤25, PEG≤1.5, FCF≥5%</p>
+            <p><span className="text-blue-400/80">Growth Picks:</span> Quality≥80, Growth≥70, PEG≤2.0, Stage=Compounder</p>
           </div>
 
           {/* Info banner */}
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-emerald-500/10 rounded-lg px-4 py-2">
+          <div className="mt-5 space-y-3">
+            <div className="flex items-center gap-3 text-[12px] text-zinc-300 bg-emerald-500/[0.06] border border-emerald-500/10 rounded-lg px-4 py-3">
               <Info className="h-4 w-4 text-emerald-400 flex-shrink-0" />
               <span>
-                <strong>Value Score</strong> = (Quality + Valuation) / 2.
+                <strong className="text-emerald-400">Value Score</strong> = (Quality + Valuation) / 2.
                 Green zone = Quality ≥60 AND Valuation ≥60 (undervalued quality stocks).
               </span>
             </div>
-            <details className="text-sm bg-slate-800/30 rounded-lg">
-              <summary className="px-4 py-2 cursor-pointer text-muted-foreground hover:text-foreground">
-                💡 Why these filter criteria? (click to expand)
+            <details className="text-[12px] bg-white/[0.02] border border-white/[0.04] rounded-lg group">
+              <summary className="px-4 py-3 cursor-pointer text-zinc-400 hover:text-zinc-200 transition-colors">
+                Why these filter criteria? (click to expand)
               </summary>
-              <div className="px-4 py-3 border-t border-border/30 space-y-2 text-muted-foreground">
+              <div className="px-4 py-4 border-t border-white/[0.04] space-y-2 text-zinc-400">
                 <p><strong className="text-emerald-400">Value Score ≥80:</strong> Top 20% combining quality + cheapness. Filters out mediocre stocks.</p>
                 <p><strong className="text-blue-400">Quality ≥60:</strong> Above-average business fundamentals. Avoids struggling companies.</p>
                 <p><strong className="text-purple-400">P/E ≤25:</strong> Not overpaying for earnings. Market average ~20.</p>
                 <p><strong className="text-amber-400">PEG ≤1.5:</strong> Growth-adjusted P/E. Below 1.5 means growth isn't overpriced.</p>
                 <p><strong className="text-teal-400">FCF Yield ≥5%:</strong> Real cash return. 5% = company generates 5¢ cash per $1 invested.</p>
-                <p className="pt-2 text-amber-400/80">
-                  ⚠️ <strong>Warning:</strong> Low PEG + Low Valuation Score = expensive but growing fast. Always check both!
+                <p className="pt-2 text-amber-400/70 text-[11px]">
+                  Note: Low PEG + Low Valuation Score = expensive but growing fast. Always check both!
                 </p>
               </div>
             </details>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Stats */}
       {stats && (
         <div className="grid gap-4 md:grid-cols-4">
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Analyzed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-400 flex items-center gap-2">
-                <Gem className="h-4 w-4" />
-                Value Picks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-400">{stats.valuePicks}</div>
-              <p className="text-xs text-muted-foreground">Quality ≥60 & Value ≥60</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Avg Value Score
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.avgValueScore.toFixed(1)}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Top Value Score
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-400">{stats.topValueScore.toFixed(1)}</div>
-            </CardContent>
-          </Card>
+          <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="h-4 w-4 text-zinc-500" />
+              <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Analyzed</span>
+            </div>
+            <p className="text-3xl font-bold font-mono text-white">{stats.total}</p>
+          </div>
+          <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.08] to-teal-500/[0.04] p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Gem className="h-4 w-4 text-emerald-400" />
+              <span className="text-[11px] text-emerald-400 uppercase tracking-wider font-medium">Value Picks</span>
+            </div>
+            <p className="text-3xl font-bold font-mono text-emerald-400">{stats.valuePicks}</p>
+            <p className="text-[10px] text-zinc-500 mt-1">Quality ≥60 & Value ≥60</p>
+          </div>
+          <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-zinc-500" />
+              <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Avg Value</span>
+            </div>
+            <p className="text-3xl font-bold font-mono text-white">{stats.avgValueScore.toFixed(1)}</p>
+          </div>
+          <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <DollarSign className="h-4 w-4 text-zinc-500" />
+              <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Top Score</span>
+            </div>
+            <p className="text-3xl font-bold font-mono text-emerald-400">{stats.topValueScore.toFixed(1)}</p>
+          </div>
         </div>
       )}
 
       {/* Quality vs Valuation Scatter Chart */}
       {scores.length > 0 && (
-        <Card className="bg-card border-border/50 overflow-hidden">
-          <CardHeader className="border-b border-border/50 bg-accent/20">
+        <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] overflow-hidden">
+          <div className="border-b border-white/[0.04] bg-white/[0.01] px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                   <Target className="h-5 w-5 text-emerald-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Quality vs Valuation Matrix</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-0.5">Click any point to view company details</p>
+                  <h3 className="text-[15px] font-semibold text-white">Quality vs Valuation Matrix</h3>
+                  <p className="text-[12px] text-zinc-500 mt-0.5">Click any point to view company details</p>
                 </div>
               </div>
-              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 px-3 py-1">
+              <span className="text-[11px] font-medium px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 Sweet Spot: Top Right
-              </Badge>
+              </span>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
+          </div>
+          <div className="p-0">
             <div className="h-[480px] relative">
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart margin={{ top: 40, right: 40, bottom: 60, left: 80 }}>
@@ -762,36 +748,36 @@ export default function ValuePicks() {
             </div>
 
             {/* Legend */}
-            <div className="px-6 py-4 border-t border-border/50 bg-accent/10">
+            <div className="px-6 py-4 border-t border-white/[0.04] bg-white/[0.01]">
               <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30" />
-                  <span className="text-sm text-muted-foreground">Value Pick <span className="text-slate-500">(Q≥60, V≥60)</span></span>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30" />
+                  <span className="text-[12px] text-zinc-400">Value Pick <span className="text-zinc-600">(Q≥60, V≥60)</span></span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-3.5 h-3.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30" />
-                  <span className="text-sm text-muted-foreground">Quality but Expensive</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30" />
+                  <span className="text-[12px] text-zinc-400">Quality but Expensive</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/30" />
-                  <span className="text-sm text-muted-foreground">Value Trap Risk</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-500 shadow-lg shadow-amber-500/30" />
+                  <span className="text-[12px] text-zinc-400">Value Trap Risk</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-3.5 h-3.5 rounded-full bg-red-500 shadow-lg shadow-red-500/30" />
-                  <span className="text-sm text-muted-foreground">Avoid</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/30" />
+                  <span className="text-[12px] text-zinc-400">Avoid</span>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Results Table */}
-      <Card className="bg-card/50 backdrop-blur border-border/50">
-        <CardHeader>
-          <CardTitle>Value Picks ({filteredAndSortedScores.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-xl border border-white/[0.04] bg-gradient-to-br from-[#0c0c0f] to-[#0e0e12] overflow-hidden">
+        <div className="border-b border-white/[0.04] bg-white/[0.01] px-6 py-4">
+          <h3 className="text-[15px] font-semibold text-white">Value Picks ({filteredAndSortedScores.length})</h3>
+        </div>
+        <div className="p-6">
           {scoreMutation.isPending ? (
             <div className="space-y-3">
               {[...Array(10)].map((_, i) => (
@@ -1007,8 +993,8 @@ export default function ValuePicks() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
